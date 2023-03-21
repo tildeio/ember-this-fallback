@@ -27,15 +27,18 @@
     "lint:prettier:fix": "prettier --write .",
     "start": "yarn build:ts && ember serve && yarn clean",
     "test": "concurrently \"npm:lint\" \"npm:test:*\" --names \"lint,test:\"",
+    "test:lib": "jest ./lib/tests/*.test.ts",
     "test:ember": "yarn build:ts && ember test && yarn clean",
     "test:ember-compatibility": "yarn build:ts && ember try:each",
     "prepack": "yarn build:ts && ember ts:precompile",
     "postpack": "yarn clean && ember ts:clean"
   },
   "dependencies": {
+    "debug": "^4.3.4",
     "ember-cli-babel": "^7.26.11",
     "ember-cli-htmlbars": "^6.2.0",
-    "ember-cli-typescript": "^5.2.1"
+    "ember-cli-typescript": "^5.2.1",
+    "winston": "^3.8.2"
   },
   "devDependencies": {
     "@babel/core": "^7.21.4",
@@ -49,7 +52,9 @@
     "@glint/core": "^1.0.0-beta.5",
     "@glint/environment-ember-loose": "^1.0.0-beta.5",
     "@glint/template": "^1.0.0-beta.5",
+    "@jest/globals": "^29.5.0",
     "@tsconfig/ember": "^2.0.0",
+    "@types/debug": "^4.1.7",
     "@types/ember-qunit": "^6.1.1",
     "@types/qunit": "^2.19.4",
     "@types/rsvp": "^4.0.4",
@@ -78,10 +83,12 @@
     "eslint-plugin-n": "^15.7.0",
     "eslint-plugin-qunit": "^7.3.4",
     "eslint-plugin-unicorn": "^46.0.0",
+    "jest": "^29.5.0",
     "loader.js": "^4.7.0",
     "prettier": "^2.8.7",
     "qunit": "^2.19.4",
     "qunit-dom": "^2.0.0",
+    "ts-jest": "^29.1.0",
     "typescript": "^5.0.4",
     "webpack": "^5.79.0"
   },

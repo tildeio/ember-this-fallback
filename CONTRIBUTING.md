@@ -23,3 +23,11 @@
 - Visit the dummy application at [http://localhost:4200](http://localhost:4200).
 
 For more information on using ember-cli, visit [https://cli.emberjs.com/release/](https://cli.emberjs.com/release/).
+
+## Debugging
+
+This plugin uses [the `debug` library](https://www.npmjs.com/package/debug) to log messages. You can see this output by setting the `DEBUG` environment variable to `*` or `ember-this-fallback-plugin`. Typically, environment variables specific to a command are set by prefixing the command. For example:
+
+```shell
+DEBUG=ember-this-fallback-plugin yarn start
+```

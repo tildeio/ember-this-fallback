@@ -16,6 +16,8 @@ module.exports = function (defaults) {
 
   const { maybeEmbroider } = require('@embroider/test-setup');
   return maybeEmbroider(app, {
+    staticHelpers: false,
+    staticComponents: false,
     skipBabel: [
       {
         package: 'qunit',

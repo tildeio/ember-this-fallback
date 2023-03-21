@@ -1,17 +1,22 @@
 'use strict';
 
-var HelloTransform = require('./lib/hello');
+var ThisFallbackPlugin = require('./lib/this-fallback-plugin');
 
 module.exports = {
   name: require('./package').name,
 
   included: function () {
-    // we have to wrap these in an object so the ember-cli
-    // registry doesn't try to call `new` on them (new is actually
-    // called within htmlbars when compiling a given template).
+    const plugin = ThisFallbackPlugin;
+    plugin.baseDir = () => {
+      return __dirname;
+    };
+    plugin.cacheKey = () => {
+      return 'ember-this-fallback';
+    };
+
     this.app.registry.add('htmlbars-ast-plugin', {
-      name: 'hello-transform',
-      plugin: HelloTransform,
+      name: 'ember-this-fallback',
+      plugin,
     });
 
     Reflect.apply(this._super.included, this, arguments);

@@ -108,6 +108,8 @@ module.exports = {
         './blueprints/*/index.js',
         './config/**/*.js',
         './tests/dummy/config/**/*.js',
+        // In addition to what ember-cli adds above:
+        './jest.config.js',
       ],
       env: {
         browser: false,
