@@ -19,6 +19,7 @@ module.exports = {
   rules: {
     'unicorn/no-null': 'off',
     'unicorn/prefer-module': 'off',
+    'unicorn/prevent-abbreviations': 'off',
   },
   overrides: [
     // ts files
@@ -31,6 +32,8 @@ module.exports = {
         'plugin:@typescript-eslint/recommended-requiring-type-checking',
       ],
       rules: {
+        'no-unused-vars': 'off',
+        // START rules from 'plugin:@typescript-eslint/strict' but with 'warn' --> 'error'
         '@typescript-eslint/array-type': 'error',
         '@typescript-eslint/ban-tslint-comment': 'error',
         '@typescript-eslint/class-literal-property-style': 'error',
@@ -69,6 +72,11 @@ module.exports = {
         '@typescript-eslint/prefer-string-starts-ends-with': 'error',
         '@typescript-eslint/prefer-ts-expect-error': 'error',
         '@typescript-eslint/unified-signatures': 'error',
+        // END rules from 'plugin:@typescript-eslint/strict'
+        '@typescript-eslint/consistent-type-imports': [
+          'error',
+          { fixStyle: 'inline-type-imports' },
+        ],
       },
     },
     // node files
