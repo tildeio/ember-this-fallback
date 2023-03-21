@@ -14,6 +14,6 @@ module.exports = {
       plugin: HelloTransform,
     });
 
-    this._super.included.apply(this, arguments);
+    Reflect.apply(this._super.included, this, arguments);
   },
 };

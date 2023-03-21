@@ -26,7 +26,7 @@ module.exports = {
     {
       files: ['**/*.ts'],
       parserOptions: {
-        project: './tsconfig.json',
+        project: ['./tsconfig.json', './lib/tsconfig.json'],
       },
       extends: [
         'plugin:@typescript-eslint/recommended-requiring-type-checking',
@@ -97,6 +97,14 @@ module.exports = {
         node: true,
       },
       extends: ['plugin:n/recommended'],
+      rules: {
+        'n/no-missing-require': [
+          'error',
+          {
+            tryExtensions: ['.js', '.json', '.ts'],
+          },
+        ],
+      },
     },
     {
       // test files
