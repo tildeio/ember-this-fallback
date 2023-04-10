@@ -13,7 +13,7 @@ class HelloPlugin implements ASTPlugin {
     },
   };
 
-  constructor(private env: ASTPluginEnvironment) {}
+  constructor(private readonly env: ASTPluginEnvironment) {}
 }
 
 const buildHelloPlugin: ASTPluginBuilder = (env) => {

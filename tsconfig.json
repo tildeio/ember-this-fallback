@@ -23,5 +23,8 @@
     "test-support/**/*",
     "addon-test-support/**/*",
     "unpublished-development-types/**/*"
-  ]
+  ],
+  "glint": {
+    "environment": ["ember-loose"]
+  }
 }
