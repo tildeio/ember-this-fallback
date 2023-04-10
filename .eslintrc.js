@@ -34,7 +34,7 @@ module.exports = {
       rules: {
         'no-unused-vars': 'off',
         // START rules from 'plugin:@typescript-eslint/strict' but with 'warn' --> 'error'
-        '@typescript-eslint/array-type': 'error',
+        '@typescript-eslint/array-type': ['error', { default: 'array-simple' }],
         '@typescript-eslint/ban-tslint-comment': 'error',
         '@typescript-eslint/class-literal-property-style': 'error',
         '@typescript-eslint/consistent-generic-constructors': 'error',
@@ -73,10 +73,27 @@ module.exports = {
         '@typescript-eslint/prefer-ts-expect-error': 'error',
         '@typescript-eslint/unified-signatures': 'error',
         // END rules from 'plugin:@typescript-eslint/strict'
+        '@typescript-eslint/consistent-type-exports': [
+          'error',
+          { fixMixedExportsWithInlineTypeSpecifier: true },
+        ],
         '@typescript-eslint/consistent-type-imports': [
           'error',
           { fixStyle: 'inline-type-imports' },
         ],
+        '@typescript-eslint/explicit-function-return-type': [
+          'error',
+          { allowTypedFunctionExpressions: true },
+        ],
+        '@typescript-eslint/method-signature-style': 'error',
+        '@typescript-eslint/no-confusing-void-expression': 'error',
+        '@typescript-eslint/no-useless-empty-export': 'error',
+        '@typescript-eslint/prefer-enum-initializers': 'error',
+        '@typescript-eslint/prefer-readonly': 'error',
+        '@typescript-eslint/prefer-regexp-exec': 'error',
+        '@typescript-eslint/promise-function-async': 'error',
+        '@typescript-eslint/require-array-sort-compare': 'error',
+        '@typescript-eslint/switch-exhaustiveness-check': 'error',
       },
     },
     // node files
