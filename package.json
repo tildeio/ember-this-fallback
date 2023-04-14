@@ -46,9 +46,9 @@
     "@glimmer/component": "^1.1.2",
     "@glimmer/syntax": "^0.84.3",
     "@glimmer/tracking": "^1.1.2",
-    "@glint/core": "^1.0.0-beta.4",
-    "@glint/environment-ember-loose": "^1.0.0-beta.4",
-    "@glint/template": "^1.0.0-beta.4",
+    "@glint/core": "^1.0.0-beta.5",
+    "@glint/environment-ember-loose": "^1.0.0-beta.5",
+    "@glint/template": "^1.0.0-beta.5",
     "@tsconfig/ember": "^2.0.0",
     "@types/ember-qunit": "^6.1.1",
     "@types/qunit": "^2.19.4",
@@ -83,7 +83,7 @@
     "qunit": "^2.19.4",
     "qunit-dom": "^2.0.0",
     "typescript": "^5.0.4",
-    "webpack": "^5.78.0"
+    "webpack": "^5.79.0"
   },
   "peerDependencies": {
     "ember-source": "^3.28.0 || ^4.0.0"
