@@ -1,5 +1,6 @@
-import { builders as b, print } from '@glimmer/syntax';
+import { WalkerPath, builders as b, print } from '@glimmer/syntax';
 import { beforeEach, describe, expect, test } from '@jest/globals';
+import { type JSUtils } from 'babel-plugin-ember-template-compilation';
 import {
   ambiguousAttrFallback,
   ambiguousStatementFallback,
@@ -18,6 +19,13 @@ const noHash = undefined;
 
 const withHash = b.hash([b.pair('arg', b.boolean(true))]);
 const withParams = [b.string('positional-param')];
+
+const mockBindImport: JSUtils['bindImport'] = (
+  _moduleSpecifier,
+  _exportedName,
+  _target,
+  opts
+) => opts?.nameHint ?? 'unknown';
 
 describe('fallback helpers', () => {
   let scopeStack: ScopeStack;
@@ -151,14 +159,17 @@ describe('fallback helpers', () => {
     describe('ambiguousAttrFallback', () => {
       describe(print(needsAmbiguousFallback), () => {
         test('has this-fallback', () => {
+          const path = new WalkerPath(needsAmbiguousFallback);
           expect(
             print(
               ambiguousAttrFallback(
-                needsAmbiguousFallback.path as AmbiguousPathExpression
+                needsAmbiguousFallback.path as AmbiguousPathExpression,
+                path,
+                mockBindImport
               )
             )
           ).toEqual(
-            `(if (this-fallback/is-helper "${NOT_IN_SCOPE}") (this-fallback/lookup-helper "${NOT_IN_SCOPE}") this.${NOT_IN_SCOPE})`
+            `(if (isHelper "${NOT_IN_SCOPE}") (lookupHelper "${NOT_IN_SCOPE}") this.${NOT_IN_SCOPE})`
           );
         });
       });
@@ -167,15 +178,17 @@ describe('fallback helpers', () => {
     describe('ambiguousStatementFallback', () => {
       describe(print(needsAmbiguousFallback), () => {
         test('has this-fallback', () => {
+          const path = new WalkerPath(needsAmbiguousFallback);
           expect(
             print(
               ambiguousStatementFallback(
                 needsAmbiguousFallback.path as AmbiguousPathExpression,
-                needsAmbiguousFallback
+                path,
+                mockBindImport
               )
             )
           ).toEqual(
-            `{{#if (this-fallback/is-invocable "${NOT_IN_SCOPE}")}}{{${NOT_IN_SCOPE}}}{{else}}{{this.${NOT_IN_SCOPE}}}{{/if}}`
+            `{{#if (isInvocable "${NOT_IN_SCOPE}")}}{{${NOT_IN_SCOPE}}}{{else}}{{this.${NOT_IN_SCOPE}}}{{/if}}`
           );
         });
       });

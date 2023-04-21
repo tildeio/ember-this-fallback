@@ -8,7 +8,10 @@ import {
   type NodeVisitor,
   type WalkerPath,
 } from '@glimmer/syntax';
-import type { WithJSUtils } from 'babel-plugin-ember-template-compilation';
+import {
+  type JSUtils,
+  type WithJSUtils,
+} from 'babel-plugin-ember-template-compilation';
 import { replaceChild } from './helpers/ast';
 import {
   ambiguousAttrFallback,
@@ -106,17 +109,24 @@ class ThisFallbackPlugin implements ASTPlugin {
             node.path = expressionFallback(n.path);
           } else if (path.parentNode?.type !== 'AttrNode') {
             this.logger.warn(ambiguousStatementFallbackWarning(n.path));
-            replaceChild(node, path, ambiguousStatementFallback(n.path, n));
+            replaceChild(
+              node,
+              path,
+              ambiguousStatementFallback(n.path, path, this.bindImport)
+            );
           } else if (!path.parentNode.name.startsWith('@')) {
             this.logger.warn(
               ambiguousAttrFallbackWarning(n.path, path.parentNode)
             );
-            node.path = ambiguousAttrFallback(n.path);
+            node.path = ambiguousAttrFallback(n.path, path, this.bindImport);
           }
         }
       },
     };
   }
+
+  private readonly bindImport: JSUtils['bindImport'] = (...args) =>
+    this.env.meta.jsutils.bindImport(...args);
 
   private handleDebug(): {
     enter: (node: AST.Template) => void;

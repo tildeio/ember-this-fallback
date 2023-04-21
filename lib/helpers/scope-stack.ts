@@ -1,11 +1,7 @@
 import { type AST } from '@glimmer/syntax';
 
+// From https://github.com/embroider-build/embroider/blob/137fcab566174aad3ebb67dda12ac80572f78ab9/packages/compat/src/resolver-transform.ts#L46-L86
 const GLOBALS = [
-  // Added by this addon
-  'this-fallback/is-invocable',
-  'this-fallback/is-helper',
-  'this-fallback/lookup-helper',
-  // From Ember, per https://github.com/embroider-build/embroider/blob/137fcab566174aad3ebb67dda12ac80572f78ab9/packages/compat/src/resolver-transform.ts#L46-L86
   '-get-dynamic-var',
   '-in-element',
   '-with-dynamic-vars',

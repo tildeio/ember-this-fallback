@@ -1,4 +1,5 @@
-import { builders as b, type AST } from '@glimmer/syntax';
+import { builders as b, type AST, type WalkerPath } from '@glimmer/syntax';
+import { type JSUtils } from 'babel-plugin-ember-template-compilation';
 import type ScopeStack from './scope-stack';
 import { headNotInScope } from './scope-stack';
 
@@ -76,9 +77,8 @@ export function maybeExpressionFallback(
 }
 
 /**
- * Wraps an ambiguous expression with the `this-fallback/is-helper` helper to
- * determine if it is a helper at runtime and fallback to the `this` property if
- * not.
+ * Wraps an ambiguous expression with the `isHelper` helper to determine if it
+ * is a helper at runtime and fallback to the `this` property if not.
  *
  * This logic is contained within a `SubExpression` that can be used to replace
  * the ambiguous expression in the parent as shown below:
@@ -89,32 +89,45 @@ export function maybeExpressionFallback(
  *
  * {{! after }}
  * <Parent
- *   id={{(if
- *     (this-fallback/is-helper "property")
- *     (helper (this-fallback/lookup-helper "property"))
- *     this.property
- *   )}}
+ *   id={{(if (isHelper "property") (lookupHelper "property") this.property)}}
  * />
  * ```
  */
 export function ambiguousAttrFallback(
-  expr: AmbiguousPathExpression
+  expr: AmbiguousPathExpression,
+  path: WalkerPath<AST.MustacheStatement>,
+  bindImport: JSUtils['bindImport']
 ): AST.SubExpression {
   const headName = expr.head.name;
+
+  const isHelper = bindImport(
+    'ember-this-fallback/is-helper',
+    'default',
+    path,
+    { nameHint: 'isHelper' }
+  );
+
+  const lookupHelper = bindImport(
+    'ember-this-fallback/lookup-helper',
+    'default',
+    path,
+    { nameHint: 'lookupHelper' }
+  );
+
   return b.sexpr('if', [
-    b.sexpr('this-fallback/is-helper', [b.string(headName)]),
+    b.sexpr(isHelper, [b.string(headName)]),
     // We can't just to `b.sexpr(headName)` bc that will cause the
     // compiler to attempt to compile a helper with the name
     // `headName` even if it doesn't exist.
-    b.sexpr('this-fallback/lookup-helper', [b.string(headName)]),
+    b.sexpr(lookupHelper, [b.string(headName)]),
     b.path(`this.${headName}`),
   ]);
 }
 
 /**
- * Wraps an ambiguous expression with the `this-fallback/is-invocable` helper to
- * determine if it is a component or helper at runtime and fallback to the
- * `this` property if not.
+ * Wraps an ambiguous expression with the `isInvocable` helper to determine if
+ * it is a component or helper at runtime and fallback to the `this` property if
+ * not.
  *
  * This logic is contained within a `BlockStatement` that can be used to replace
  * the ambiguous expression in the parent as shown below:
@@ -124,7 +137,7 @@ export function ambiguousAttrFallback(
  * {{property}}
  *
  * {{! after }}
- * {{#if (this-fallback/is-invocable "property")}}
+ * {{#if (isInvocable "property")}}
  *   {{property}}
  * {{else}}
  *   {{this.property}}
@@ -133,16 +146,24 @@ export function ambiguousAttrFallback(
  */
 export function ambiguousStatementFallback(
   expr: AmbiguousPathExpression,
-  node: AST.MustacheStatement
+  path: WalkerPath<AST.MustacheStatement>,
+  bindImport: JSUtils['bindImport']
 ): AST.Statement {
   const headName = expr.head.name;
+  const isInvocable = bindImport(
+    'ember-this-fallback/is-invocable',
+    'default',
+    path,
+    { nameHint: 'isInvocable' }
+  );
+
   return b.block(
     'if',
-    [b.sexpr('this-fallback/is-invocable', [b.string(headName)])],
+    [b.sexpr(isInvocable, [b.string(headName)])],
     null,
     b.blockItself([b.mustache(headName)]),
     b.blockItself([b.mustache(b.path(`this.${headName}`))]),
-    node.loc
+    path.node.loc
   );
 }
 

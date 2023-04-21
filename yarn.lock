@@ -1303,6 +1303,11 @@
   resolved "https://registry.yarnpkg.com/@glint/environment-ember-loose/-/environment-ember-loose-1.0.0-beta.5.tgz#0200c81bf599409b9a495e26030ac83587264ff7"
   integrity sha512-CZe6qX1rzc0KQjl0fk0/c8TWmMCHAGmPtvMTjbnjCr8kny7Kp7KoK1Tuj3fTZ/ThpRZDCMj7QzU1AHyG273EDw==
 
+"@glint/environment-ember-template-imports@^1.0.0-beta.5":
+  version "1.0.0-beta.5"
+  resolved "https://registry.yarnpkg.com/@glint/environment-ember-template-imports/-/environment-ember-template-imports-1.0.0-beta.5.tgz#600469105fc44d4259ff46d3143243bfb8869a12"
+  integrity sha512-1o77XPwoP13p6sUxdCo+OxX13LfLTM/6G0b7WWaCL1H2J8EyhXPxD5GO+u5nXbR14TJEveD+61dqfnCJwRy87g==
+
 "@glint/template@^1.0.0-beta.5":
   version "1.0.0-beta.5"
   resolved "https://registry.yarnpkg.com/@glint/template/-/template-1.0.0-beta.5.tgz#0d094750ab69069e54a92647d06c7d8813732395"
@@ -3923,6 +3928,11 @@ core-js@^2.6.5:
   version "2.6.12"
   resolved "https://registry.yarnpkg.com/core-js/-/core-js-2.6.12.tgz#d9333dfa7b065e347cc5682219d6f690859cc2ec"
   integrity sha512-Kb2wC0fvsWfQrgk8HU5lW6U/Lcs8+9aaYcy4ZFc6DDlo4nZ7n70dEgE5rtR0oG6ufKDUnrwfWL1mXR5ljDatrQ==
+
+core-js@^3.4.1:
+  version "3.30.1"
+  resolved "https://registry.yarnpkg.com/core-js/-/core-js-3.30.1.tgz#fc9c5adcc541d8e9fa3e381179433cbf795628ba"
+  integrity sha512-ZNS5nbiSwDTq4hFosEDqm65izl2CWmLz0hARJMyNQBgkUZMIF51cQiMvIQKA6hvuaeWxQDP3hEedM1JZIgTldQ==
 
 core-object@^3.1.5:
   version "3.1.5"
@@ -8906,7 +8916,19 @@ prepend-http@^2.0.0:
   resolved "https://registry.yarnpkg.com/prepend-http/-/prepend-http-2.0.0.tgz#e92434bfa5ea8c19f41cdfd401d741a3c819d897"
   integrity sha512-ravE6m9Atw9Z/jjttRUZ+clIXogdghyZAuWJ3qEzjT+jI/dL1ifAqhZeC5VHzQp1MSt1+jxKkFNemj/iO7tVUA==
 
-prettier@^2.5.1, prettier@^2.8.7:
+prettier-plugin-ember-template-tag@^0.3.2:
+  version "0.3.2"
+  resolved "https://registry.yarnpkg.com/prettier-plugin-ember-template-tag/-/prettier-plugin-ember-template-tag-0.3.2.tgz#dcf4e402951d6766a9880308ea6a405c9ea5a5f1"
+  integrity sha512-L/15ujsvuOpuIB9y9XJJs/QOPgdot76T0U1Q34C19igS1lsaL/cdRw8rXIVC5Z2x362yZI33Qodo//7kK7ItkA==
+  dependencies:
+    "@babel/core" "^7.20.12"
+    "@glimmer/syntax" "^0.84.2"
+    ember-cli-htmlbars "^6.2.0"
+    ember-template-imports "^3.4.1"
+    prettier "^2.8.3"
+    ts-replace-all "^1.0.0"
+
+prettier@^2.5.1, prettier@^2.8.3, prettier@^2.8.7:
   version "2.8.7"
   resolved "https://registry.yarnpkg.com/prettier/-/prettier-2.8.7.tgz#bb79fc8729308549d28fe3a98fce73d2c0656450"
   integrity sha512-yPngTo3aXUUmyuTjeTUT75txrf+aMh9FiD7q9ZE/i6r0bPb22g4FsE6Y338PQX1bmfy08i9QQCB7/rcUAVntfw==
@@ -10493,6 +10515,13 @@ ts-jest@^29.1.0:
     make-error "1.x"
     semver "7.x"
     yargs-parser "^21.0.1"
+
+ts-replace-all@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/ts-replace-all/-/ts-replace-all-1.0.0.tgz#ef28283ccdb4da7d69fb03cf543e09e51711659b"
+  integrity sha512-6uBtdkw3jHXkPtx/e9xB/5vcngMm17CyJYsS2YZeQ+9FdRnt6Ev5g931Sg2p+dxbtMGoCm13m3ax/obicTZIkQ==
+  dependencies:
+    core-js "^3.4.1"
 
 tslib@^1.8.1, tslib@^1.9.0:
   version "1.14.1"
