@@ -2581,7 +2581,7 @@ babel-plugin-ember-modules-api-polyfill@^3.5.0:
   dependencies:
     ember-rfc176-data "^0.3.17"
 
-babel-plugin-ember-template-compilation@^2.0.0, babel-plugin-ember-template-compilation@^2.0.1:
+babel-plugin-ember-template-compilation@^2.0.0, babel-plugin-ember-template-compilation@^2.0.1, babel-plugin-ember-template-compilation@^2.0.2:
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/babel-plugin-ember-template-compilation/-/babel-plugin-ember-template-compilation-2.0.2.tgz#632a082feac60fea1432fd6c9448e65bb7884fd5"
   integrity sha512-/sQJbmOqfNfaEYrIayy8qpfi6GhsoMeBVR3IiihOTHaKFN9+EdTzED8fhUqfshBPu5Qz6zhPkY1aMJ3k/mAuxw==

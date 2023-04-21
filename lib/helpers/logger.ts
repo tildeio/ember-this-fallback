@@ -13,22 +13,22 @@ type LogInfo = Logform.TransformableInfo & {
   timestamp: string;
 };
 
-const debug = _debug('ember-this-fallback-plugin');
+export default function createLogger(namespace: string, label: string): Logger {
+  const debug = _debug(namespace);
 
-class DebugTransport extends Transport {
-  public override log(info: LogInfo, next: () => void): void {
-    debug(info[Symbol.for('message')]);
-    next();
+  class DebugTransport extends Transport {
+    public override log(info: LogInfo, next: () => void): void {
+      debug(info[Symbol.for('message')]);
+      next();
+    }
   }
-}
 
-export default function createLogger(name: string, label: string): Logger {
   return _createLogger({
     level: 'debug',
     transports: [
       new transports.File({
         level: 'info',
-        filename: `${name}-plugin.log`,
+        filename: `${namespace}.log`,
         format: format.combine(
           joinLines(),
           format.label({ label }),

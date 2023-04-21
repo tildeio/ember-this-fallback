@@ -8,6 +8,7 @@ import {
   type NodeVisitor,
   type WalkerPath,
 } from '@glimmer/syntax';
+import type { WithJSUtils } from 'babel-plugin-ember-template-compilation';
 import { replaceChild } from './helpers/ast';
 import {
   ambiguousAttrFallback,
@@ -22,10 +23,14 @@ import createLogger from './helpers/logger';
 import ScopeStack from './helpers/scope-stack';
 import { squish } from './helpers/string';
 
+type Env = WithJSUtils<ASTPluginEnvironment> & {
+  moduleName: string;
+};
+
 class ThisFallbackPlugin implements ASTPlugin {
   readonly name = 'ember-this-fallback';
 
-  constructor(private readonly env: ASTPluginEnvironment) {}
+  constructor(private readonly env: Env) {}
 
   readonly visitor: NodeVisitor = {
     Template: this.handleDebug(),
@@ -45,8 +50,8 @@ class ThisFallbackPlugin implements ASTPlugin {
   private readonly scopeStack = new ScopeStack();
 
   private readonly logger = createLogger(
-    this.name,
-    'moduleName' in this.env ? String(this.env.moduleName) : 'unknown'
+    `${this.name}-plugin`,
+    this.env.moduleName
   );
 
   private handleBlock<N extends AST.Block | AST.ElementNode>(): {
@@ -128,7 +133,7 @@ class ThisFallbackPlugin implements ASTPlugin {
   }
 }
 
-const buildThisFallbackPlugin: ASTPluginBuilder = (env) =>
+const buildThisFallbackPlugin: ASTPluginBuilder<Env> = (env) =>
   new ThisFallbackPlugin(env);
 
 export = buildThisFallbackPlugin;
