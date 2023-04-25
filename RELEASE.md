@@ -17,41 +17,47 @@ guiding principle here is that changelogs are for humans, not machines.
 
 When reviewing merged PR's the labels to be used are:
 
-* breaking - Used when the PR is considered a breaking change.
-* enhancement - Used when the PR adds a new feature or enhancement.
-* bug - Used when the PR fixes a bug included in a previous release.
-* documentation - Used when the PR adds or updates documentation.
-* internal - Used for internal changes that still require a mention in the
+- _breaking_ - Used when the PR is considered a breaking change.
+- _enhancement_ - Used when the PR adds a new feature or enhancement.
+- _bug_ - Used when the PR fixes a bug included in a previous release.
+- _documentation_ - Used when the PR adds or updates documentation.
+- _internal_ - Used for internal changes that still require a mention in the
   changelog/release notes.
 
 ## Release
 
 Once the prep work is completed, the actual release is straight forward:
 
-* First, ensure that you have installed your projects dependencies:
+1. Ensure that you have installed your projects dependencies:
 
-```sh
-yarn install
-```
+   ```sh
+   yarn install
+   ```
 
-* Second, ensure that you have obtained a
-  [GitHub personal access token][generate-token] with the `repo` scope (no
-  other permissions are needed). Make sure the token is available as the
-  `GITHUB_AUTH` environment variable.
+1. Ensure that you have obtained a
+   [GitHub personal access token][generate-token] with the `repo` scope (no
+   other permissions are needed). Add the token to your `.env` file as the
+   `GITHUB_AUTH` environment variable.
 
-  For instance:
+   For instance:
 
-  ```bash
-  export GITHUB_AUTH=abc123def456
-  ```
+   ```shell
+   GITHUB_AUTH=abc123def456
+   ```
 
-[generate-token]: https://github.com/settings/tokens/new?scopes=repo&description=GITHUB_AUTH+env+variable
+   [generate-token]: https://github.com/settings/tokens/new?scopes=repo&description=GITHUB_AUTH+env+variable
 
-* And last (but not least 😁) do your release.
+1. Optionally, verify the release process will go as expected with
 
-```sh
-npx release-it
-```
+   ```sh
+   yarn release:dry
+   ```
+
+1. And last (but not least 😁) do your release:
+
+   ```sh
+   yarn release
+   ```
 
 [release-it](https://github.com/release-it/release-it/) manages the actual
 release process. It will prompt you to to choose the version number after which
