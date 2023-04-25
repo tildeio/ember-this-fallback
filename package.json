@@ -5,7 +5,10 @@
   "keywords": [
     "ember-addon"
   ],
-  "repository": "",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:tildeio/ember-this-fallback.git"
+  },
   "license": "MIT",
   "author": "",
   "directories": {
@@ -13,8 +16,8 @@
     "test": "tests"
   },
   "scripts": {
-    "build:ts": "cd lib && tsc",
     "build": "yarn build:ts && ember build --environment=production",
+    "build:ts": "cd lib && tsc",
     "clean": "cd lib && tsc --build --clean",
     "lint": "concurrently \"npm:lint:*(!fix)\" --names \"lint:\"",
     "lint:fix": "concurrently \"npm:lint:*:fix\" --names \"fix:\"",
@@ -22,16 +25,16 @@
     "lint:hbs:fix": "ember-template-lint . --fix",
     "lint:js": "eslint . --cache",
     "lint:js:fix": "eslint . --fix",
-    "lint:types": "glint",
     "lint:prettier": "prettier --check .",
     "lint:prettier:fix": "prettier --write .",
+    "lint:types": "glint",
+    "prepack": "yarn build:ts && ember ts:precompile",
+    "postpack": "yarn clean && ember ts:clean",
     "start": "yarn build:ts && ember serve && yarn clean",
     "test": "concurrently \"npm:lint\" \"npm:test:*\" --names \"lint,test:\"",
-    "test:lib": "jest ./lib/tests/*.test.ts",
     "test:ember": "yarn build:ts && ember test && yarn clean",
     "test:ember-compatibility": "yarn build:ts && ember try:each",
-    "prepack": "yarn build:ts && ember ts:precompile",
-    "postpack": "yarn clean && ember ts:clean"
+    "test:lib": "jest ./lib/tests/*.test.ts"
   },
   "dependencies": {
     "babel-plugin-ember-template-compilation": "^2.0.2",
@@ -55,6 +58,7 @@
     "@glint/environment-ember-template-imports": "^1.0.0-beta.5",
     "@glint/template": "^1.0.0-beta.5",
     "@jest/globals": "^29.5.0",
+    "@release-it-plugins/lerna-changelog": "^5.0.0",
     "@tsconfig/ember": "^2.0.0",
     "@types/debug": "^4.1.7",
     "@types/ember-qunit": "^6.1.1",
@@ -92,6 +96,7 @@
     "prettier-plugin-ember-template-tag": "^0.3.2",
     "qunit": "^2.19.4",
     "qunit-dom": "^2.0.0",
+    "release-it": "^15.10.1",
     "ts-jest": "^29.1.0",
     "typescript": "^5.0.4",
     "webpack": "^5.79.0"
@@ -102,10 +107,28 @@
   "engines": {
     "node": "14.* || 16.* || >= 18"
   },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org"
+  },
   "ember": {
     "edition": "octane"
   },
   "ember-addon": {
     "configPath": "tests/dummy/config"
+  },
+  "release-it": {
+    "plugins": {
+      "@release-it-plugins/lerna-changelog": {
+        "infile": "CHANGELOG.md",
+        "launchEditor": false
+      }
+    },
+    "git": {
+      "tagName": "v${version}"
+    },
+    "github": {
+      "release": true,
+      "tokenRef": "GITHUB_AUTH"
+    }
   }
 }
