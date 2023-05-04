@@ -1,7 +1,8 @@
 import { builders as b, type AST, type WalkerPath } from '@glimmer/syntax';
 import { type JSUtils } from 'babel-plugin-ember-template-compilation';
 import type ScopeStack from './scope-stack';
-import { headNotInScope } from './scope-stack';
+import { headNotInScope, unusedNameLike } from './scope-stack';
+import { classify } from './string';
 
 const FALLBACK_DETAILS_MESSAGE =
   'See https://github.com/tildeio/ember-this-fallback#embroider-compatibility for more details.';
@@ -10,7 +11,11 @@ export type AmbiguousPathExpression = AST.PathExpression & {
   head: AST.VarHead;
 };
 
-type ExampleWrapper = (invocation: string) => string;
+export type AmbiguousMustacheExpression = AST.MustacheStatement & {
+  params: [];
+  hash: AST.Hash & { pairs: [] };
+  path: AmbiguousPathExpression;
+};
 
 export function needsFallback(
   expr: AST.Expression,
@@ -22,11 +27,7 @@ export function needsFallback(
 export function mustacheNeedsFallback(
   node: AST.MustacheStatement,
   scope: ScopeStack
-): node is AST.MustacheStatement & {
-  params: [];
-  hash: AST.Hash & { pairs: [] };
-  path: AmbiguousPathExpression;
-} {
+): node is AmbiguousMustacheExpression {
   return (
     node.params.length === 0 &&
     node.hash.pairs.length === 0 &&
@@ -77,119 +78,146 @@ export function maybeExpressionFallback(
 }
 
 /**
- * Wraps an ambiguous expression with the `isHelper` helper to determine if it
- * is a helper at runtime and fallback to the `this` property if not.
+ * Wraps a node with a `{{let}}` block that invokes the `tryLookupHelper` helper
+ * to lookup the given ambiguous path heads as helpers at runtime. The results
+ * of each lookup will be stored on a hash and available to the block with a
+ * block param of the given name.
  *
  * This logic is contained within a `SubExpression` that can be used to replace
  * the ambiguous expression in the parent as shown below:
  *
  * ```hbs
- * {{! before }}
- * <Parent id={{property}} />
- *
- * {{! after }}
- * <Parent
- *   id={{(if (isHelper "property") (lookupHelper "property") this.property)}}
- * />
+ * {{! example }}
+ * {{#let (hash property=(tryLookupHelper 'property')) as |maybeHelpers|}}
+ *   {{! ... given node here ... }}
+ * {{/let}}
  * ```
  */
-export function ambiguousAttrFallback(
-  expr: AmbiguousPathExpression,
-  path: WalkerPath<AST.MustacheStatement>,
+export function wrapWithTryLookup(
+  path: WalkerPath<AST.Statement>,
+  node: AST.Statement,
+  headsToLookup: Set<string>,
+  blockParam: string,
   bindImport: JSUtils['bindImport']
+): AST.BlockStatement {
+  const tryLookupHelper = bindImport(
+    'ember-this-fallback/try-lookup-helper',
+    'default',
+    path,
+    { nameHint: 'try-lookup-helper' }
+  );
+  const lookupsHash = b.sexpr(
+    b.path('hash'),
+    undefined,
+    b.hash(
+      [...headsToLookup].map((headName) =>
+        b.pair(headName, b.sexpr(tryLookupHelper, [b.string(headName)]))
+      )
+    )
+  );
+
+  return b.block(
+    b.path('let'),
+    [lookupsHash],
+    null,
+    b.blockItself([node], [blockParam]),
+    null,
+    node.loc
+  );
+}
+
+/**
+ * Provides a sub-expression that is useful within a node in a `{{let}}` block
+ * that invokes the `tryLookupHelper`. If the property exists on the block param
+ * with the given name, it will be invoked as a helper. If not, will use
+ * `expressionFallback`.
+ *
+ * ```hbs
+ * (if maybeHelpers.property (maybeHelpers.property) this.property)
+ * ```
+ */
+export function helperOrExpressionFallback(
+  blockParamName: string,
+  expr: AmbiguousMustacheExpression
 ): AST.SubExpression {
-  const headName = expr.head.name;
-
-  const isHelper = bindImport(
-    'ember-this-fallback/is-helper',
-    'default',
-    path,
-    { nameHint: 'isHelper' }
-  );
-
-  const lookupHelper = bindImport(
-    'ember-this-fallback/lookup-helper',
-    'default',
-    path,
-    { nameHint: 'lookupHelper' }
-  );
-
-  return b.sexpr('if', [
-    b.sexpr(isHelper, [b.string(headName)]),
-    // We can't just to `b.sexpr(headName)` bc that will cause the
-    // compiler to attempt to compile a helper with the name
-    // `headName` even if it doesn't exist.
-    b.sexpr(lookupHelper, [b.string(headName)]),
-    b.path(`this.${headName}`),
+  const headName = expr.path.head.name;
+  const maybeHelper = `${blockParamName}.${headName}`;
+  return b.sexpr(b.path('if'), [
+    b.path(maybeHelper),
+    b.sexpr(b.path(maybeHelper)),
+    expressionFallback(expr.path),
   ]);
 }
 
 /**
- * Wraps an ambiguous expression with the `isInvocable` helper to determine if
- * it is a component or helper at runtime and fallback to the `this` property if
- * not.
- *
- * This logic is contained within a `BlockStatement` that can be used to replace
- * the ambiguous expression in the parent as shown below:
+ * Wraps an ambiguous expression with the `isComponent` helper to determine if
+ * it is a component at runtime. If so, invokes it as a component. If not, wraps
+ * the invocation with the `tryLookupHelper` helper to determine if it is a
+ * helper at runtime and fallback to the `this` property if not.
  *
  * ```hbs
  * {{! before }}
  * {{property}}
  *
  * {{! after }}
- * {{#if (isInvocable "property")}}
- *   {{property}}
+ * {{#if (isComponent "property")}}
+ *   <Property />
  * {{else}}
- *   {{this.property}}
+ *   {{#let (hash property=(tryLookupHelper "property")) as |maybeHelpers|}}
+ *     {{(if maybeHelpers.property (maybeHelpers.property) this.property)}}
+ *   {{/let}}
  * {{/if}}
  * ```
  */
 export function ambiguousStatementFallback(
-  expr: AmbiguousPathExpression,
+  expr: AmbiguousMustacheExpression,
   path: WalkerPath<AST.MustacheStatement>,
-  bindImport: JSUtils['bindImport']
-): AST.Statement {
-  const headName = expr.head.name;
-  const isInvocable = bindImport(
-    'ember-this-fallback/is-invocable',
+  bindImport: JSUtils['bindImport'],
+  scope: ScopeStack
+): AST.BlockStatement {
+  const headName = expr.path.head.name;
+  const isComponent = bindImport(
+    'ember-this-fallback/is-component',
     'default',
     path,
-    { nameHint: 'isInvocable' }
+    { nameHint: 'isComponent' }
+  );
+
+  const blockParamName = unusedNameLike('maybeHelpers', scope);
+  const maybeHelperFallback = b.mustache(
+    helperOrExpressionFallback(blockParamName, expr)
+  );
+  const tryLookup = wrapWithTryLookup(
+    path,
+    maybeHelperFallback,
+    new Set([headName]),
+    blockParamName,
+    bindImport
   );
 
   return b.block(
-    'if',
-    [b.sexpr(isInvocable, [b.string(headName)])],
+    b.path('if'),
+    [b.sexpr(isComponent, [b.string(headName)])],
     null,
-    b.blockItself([b.mustache(headName)]),
-    b.blockItself([b.mustache(b.path(`this.${headName}`))]),
+    b.blockItself([b.element({ name: classify(headName), selfClosing: true })]),
+    b.blockItself([tryLookup]),
     path.node.loc
   );
 }
 
-export function ambiguousAttrFallbackWarning(
-  expr: AmbiguousPathExpression,
-  parent: AST.AttrNode
-): string[] {
-  const headName = expr.head.name;
-  const exampleWrapper: ExampleWrapper = (invocation) =>
-    `${parent.name}=${invocation}`;
-  const original = exampleWrapper(`{{${headName}}}`);
+export function ambiguousAttrFallbackWarning(headName: string): string[] {
+  const original = `{{${headName}}}`;
 
   return [
-    `Found ambiguous mustache statement as attribute node value: \`${original}\`.`,
+    `Found ambiguous mustache statement as attribute node value \`${original}\`.`,
     `Falling back to runtime dynamic resolution. You can avoid this fallback by:`,
-    `- ${explicitHelperSuggestion(headName, exampleWrapper)}`,
-    `- ${thisPropertySuggestion(headName, exampleWrapper)}`,
+    `- ${explicitHelperSuggestion(headName)}`,
+    `- ${thisPropertySuggestion(headName)}`,
     FALLBACK_DETAILS_MESSAGE,
   ];
 }
 
-export function ambiguousStatementFallbackWarning(
-  expr: AmbiguousPathExpression
-): string[] {
-  const headName = expr.head.name;
-
+export function ambiguousStatementFallbackWarning(headName: string): string[] {
   return [
     `Found ambiguous mustache statement: \`{{${headName}}}\`.`,
     `Falling back to runtime dynamic resolution. You can avoid this fallback by:`,
@@ -201,18 +229,14 @@ export function ambiguousStatementFallbackWarning(
 }
 
 function explicitComponentSuggestion(name: string): string {
-  const invocation = `<${name.charAt(0).toUpperCase()}${name.slice(1)} />`;
+  const invocation = `<${classify(name)} />`;
   return `explicitly invoking a known component with angle-brackets: \`${invocation}\``;
 }
 
-function explicitHelperSuggestion(name: string, wrap?: ExampleWrapper): string {
-  wrap = wrap ?? ((invocation): string => invocation);
-  const invocation = wrap(`{{(${name})}}`);
-  return `explicitly invoking a known helper with parens: \`${invocation}\``;
+function explicitHelperSuggestion(name: string): string {
+  return `explicitly invoking a known helper with parens: \`{{(${name})}}\``;
 }
 
-function thisPropertySuggestion(name: string, wrap?: ExampleWrapper): string {
-  wrap = wrap ?? ((invocation): string => invocation);
-  const invocation = wrap(`{{this.${name}}}`);
-  return `prefacing a known property on \`this\` with \`this\`: \`${invocation}\``;
+function thisPropertySuggestion(name: string): string {
+  return `prefacing a known property on \`this\` with \`this\`: \`{{this.${name}}}\``;
 }

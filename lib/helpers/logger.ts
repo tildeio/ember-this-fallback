@@ -1,3 +1,4 @@
+import { type SourceSpan } from '@glimmer/syntax';
 import _debug from 'debug';
 import {
   createLogger as _createLogger,
@@ -7,6 +8,8 @@ import {
   type Logger,
 } from 'winston';
 import Transport from 'winston-transport';
+
+export { type Logger } from 'winston';
 
 type LogInfo = Logform.TransformableInfo & {
   label: string;
@@ -61,18 +64,29 @@ const joinLines = format((info) => {
   return info;
 });
 
-const logFormatter = format.printf(({ level, label, timestamp, message }) => {
-  return `${String(timestamp)} [${level}] ${concatMessage(
-    String(label),
-    String(message)
-  )}`;
-});
+const logFormatter = format.printf(
+  ({ level, label, timestamp, message, loc }) => {
+    return `${String(timestamp)} [${level}] ${concatMessage(
+      String(label),
+      String(message),
+      loc as SourceSpan | undefined
+    )}`;
+  }
+);
 
 const debugFormatter = format.printf(({ label, message }) => {
   return concatMessage(String(label), String(message));
 });
 
-function concatMessage(label: string, message: string): string {
+function concatMessage(
+  label: string,
+  message: string,
+  loc?: SourceSpan | undefined
+): string {
+  if (loc) {
+    const start = loc.startPosition;
+    label += `:${start.line}:${start.column + 1}`;
+  }
   return joinLogLines([label, message]);
 }
 

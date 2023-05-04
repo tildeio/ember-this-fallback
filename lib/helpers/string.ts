@@ -1,3 +1,5 @@
+import { camelCase, upperFirst } from 'lodash';
+
 /**
  * Based on Rails' String#squish
  *
@@ -14,4 +16,8 @@ export function squish(str: string): string {
       .replace(/\s+/g, ' ') // squish multiple spaces into one
     /* eslint-enable unicorn/prefer-string-replace-all */
   );
+}
+
+export function classify(str: string): string {
+  return upperFirst(camelCase(str));
 }

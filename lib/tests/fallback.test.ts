@@ -2,14 +2,17 @@ import { WalkerPath, builders as b, print } from '@glimmer/syntax';
 import { beforeEach, describe, expect, test } from '@jest/globals';
 import { type JSUtils } from 'babel-plugin-ember-template-compilation';
 import {
-  ambiguousAttrFallback,
   ambiguousStatementFallback,
   expressionFallback,
+  helperOrExpressionFallback,
   mustacheNeedsFallback,
   needsFallback,
+  wrapWithTryLookup,
+  type AmbiguousMustacheExpression,
   type AmbiguousPathExpression,
 } from '../helpers/fallback';
 import ScopeStack from '../helpers/scope-stack';
+import { classify } from '../helpers/string';
 
 const IN_SCOPE = 'inScope';
 const NOT_IN_SCOPE = 'notInScope';
@@ -87,12 +90,12 @@ describe('fallback helpers', () => {
 
   describe('MustacheStatement', () => {
     const needsExpressionFallback = b.mustache(
-      b.path(NOT_IN_SCOPE),
+      b.path(`${NOT_IN_SCOPE}.tail`),
       noParams,
       noHash
     );
     const needsAmbiguousFallback = b.mustache(
-      b.path(`${NOT_IN_SCOPE}.tail`),
+      b.path(NOT_IN_SCOPE),
       noParams,
       noHash
     );
@@ -151,25 +154,44 @@ describe('fallback helpers', () => {
                 needsExpressionFallback.path as AmbiguousPathExpression
               )
             )
-          ).toEqual(`this.${NOT_IN_SCOPE}`);
+          ).toEqual(`this.${NOT_IN_SCOPE}.tail`);
         });
       });
     });
 
-    describe('ambiguousAttrFallback', () => {
+    describe('helperOrExpressionFallback', () => {
+      describe(print(needsAmbiguousFallback), () => {
+        test('has this-fallback', () => {
+          expect(
+            print(
+              helperOrExpressionFallback(
+                'maybeHelpers',
+                needsAmbiguousFallback as AmbiguousMustacheExpression
+              )
+            )
+          ).toEqual(
+            `(if maybeHelpers.${NOT_IN_SCOPE} (maybeHelpers.${NOT_IN_SCOPE}) this.${NOT_IN_SCOPE})`
+          );
+        });
+      });
+    });
+
+    describe('wrapWithTryLookup', () => {
       describe(print(needsAmbiguousFallback), () => {
         test('has this-fallback', () => {
           const path = new WalkerPath(needsAmbiguousFallback);
           expect(
             print(
-              ambiguousAttrFallback(
-                needsAmbiguousFallback.path as AmbiguousPathExpression,
+              wrapWithTryLookup(
                 path,
+                needsAmbiguousFallback as AmbiguousMustacheExpression,
+                new Set([NOT_IN_SCOPE]),
+                'maybeHelpers',
                 mockBindImport
               )
             )
           ).toEqual(
-            `(if (isHelper "${NOT_IN_SCOPE}") (lookupHelper "${NOT_IN_SCOPE}") this.${NOT_IN_SCOPE})`
+            `{{#let (hash ${NOT_IN_SCOPE}=(try-lookup-helper "${NOT_IN_SCOPE}")) as |maybeHelpers|}}{{${NOT_IN_SCOPE}}}{{/let}}`
           );
         });
       });
@@ -182,13 +204,16 @@ describe('fallback helpers', () => {
           expect(
             print(
               ambiguousStatementFallback(
-                needsAmbiguousFallback.path as AmbiguousPathExpression,
+                needsAmbiguousFallback as AmbiguousMustacheExpression,
                 path,
-                mockBindImport
+                mockBindImport,
+                scopeStack
               )
             )
           ).toEqual(
-            `{{#if (isInvocable "${NOT_IN_SCOPE}")}}{{${NOT_IN_SCOPE}}}{{else}}{{this.${NOT_IN_SCOPE}}}{{/if}}`
+            `{{#if (isComponent "${NOT_IN_SCOPE}")}}<${classify(
+              NOT_IN_SCOPE
+            )} />{{else}}{{#let (hash ${NOT_IN_SCOPE}=(try-lookup-helper "${NOT_IN_SCOPE}")) as |maybeHelpers|}}{{(if maybeHelpers.${NOT_IN_SCOPE} (maybeHelpers.${NOT_IN_SCOPE}) this.${NOT_IN_SCOPE})}}{{/let}}{{/if}}`
           );
         });
       });

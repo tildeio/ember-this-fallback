@@ -1,18 +1,11 @@
-import { helper } from '@ember/component/helper';
 import { render } from '@ember/test-helpers';
-import { squish } from 'dummy/lib/string';
 import { setupRenderingTest } from 'dummy/tests/helpers';
+import {
+  localHelperNamed,
+  localHelperPositional,
+} from 'dummy/tests/helpers/helpers';
 import { hbs } from 'ember-cli-htmlbars';
 import { module, test } from 'qunit';
-
-// NOTE: We can't use function as helper because we support Ember versions <4.5
-const localHelperPositional = helper(([positionalArg]: [string]) =>
-  squish(`local-helper-result ${positionalArg}`)
-);
-const localHelperNamed = helper(
-  (_positional: never[], { arg }: { arg: string }) =>
-    squish(`local-helper-result ${arg}`)
-);
 
 module('Integration | Plugin | MustacheStatement', function (hooks) {
   setupRenderingTest(hooks);
@@ -57,6 +50,14 @@ module('Integration | Plugin | MustacheStatement', function (hooks) {
 
         module('within an AttrNode', function () {
           module('for an attr', function () {
+            test('handles an invocable helper', async function (assert) {
+              await render(hbs`<GlobalComponent id={{global-helper}} />`);
+              assert.dom().hasText('global-component-contents');
+              assert
+                .dom('[data-test-global-component]')
+                .hasAttribute('id', 'global-helper-result');
+            });
+
             test('handles this-fallback', async function (assert) {
               this.set('property', 'property-on-this');
               await render<{ property: string }>(hbs`

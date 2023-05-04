@@ -1,0 +1,26 @@
+import Helper from '@ember/component/helper';
+import { type Factory } from '@ember/owner';
+import { getOwner } from './get-owner';
+import { assertExists } from './types/util';
+
+type Positional = [name: string];
+
+interface TryLookupHelperSignature {
+  Args: {
+    Positional: Positional;
+  };
+  Return: Factory<object> | undefined;
+}
+
+/**
+ * Returns the helper `Factory` for the helper with the provided name if it
+ * exists and `undefined` if not.
+ * Similar to `helper` helper, but avoids build-time errors for
+ * this-fallback invocations.
+ */
+export default class TryLookupHelper extends Helper<TryLookupHelperSignature> {
+  compute([name]: Positional): Factory<object> | undefined {
+    const owner = assertExists(getOwner(this), 'Could not find owner');
+    return owner.factoryFor(`helper:${name}`)?.class;
+  }
+}

@@ -34,11 +34,13 @@
     "postpack": "yarn clean && ember ts:clean"
   },
   "dependencies": {
+    "@glimmer/syntax": "^0.84.3",
     "babel-plugin-ember-template-compilation": "^2.0.2",
     "debug": "^4.3.4",
     "ember-cli-babel": "^7.26.11",
     "ember-cli-htmlbars": "^6.2.0",
     "ember-cli-typescript": "^5.2.1",
+    "lodash": "^4.17.21",
     "winston": "^3.8.2"
   },
   "devDependencies": {
@@ -48,7 +50,6 @@
     "@ember/test-helpers": "^2.9.3",
     "@embroider/test-setup": "^2.1.1",
     "@glimmer/component": "^1.1.2",
-    "@glimmer/syntax": "^0.84.3",
     "@glimmer/tracking": "^1.1.2",
     "@glint/core": "^1.0.0-beta.5",
     "@glint/environment-ember-loose": "^1.0.0-beta.5",
@@ -58,6 +59,7 @@
     "@tsconfig/ember": "^2.0.0",
     "@types/debug": "^4.1.7",
     "@types/ember-qunit": "^6.1.1",
+    "@types/lodash": "^4.14.194",
     "@types/qunit": "^2.19.4",
     "@types/rsvp": "^4.0.4",
     "@typescript-eslint/eslint-plugin": "^5.58.0",
@@ -97,7 +99,8 @@
     "webpack": "^5.79.0"
   },
   "peerDependencies": {
-    "ember-source": "^3.28.0 || ^4.0.0"
+    "ember-cli-htmlbars": "^6.2.0",
+    "ember-source": "^3.28.11 || ^4.0.0"
   },
   "engines": {
     "node": "14.* || 16.* || >= 18"

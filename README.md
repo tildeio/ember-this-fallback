@@ -52,33 +52,37 @@ For each `PathExpression` with a `VarHead` that is NOT in the local template sco
 
     - If the `MustacheStatement` is the child of an `AttrNode` with a name NOT starting with `@`:
 
-      Wrap the invocation with an `isHelper` helper to determine if it is a helper at runtime and fallback to the `this` property if not ("ambiguous attribute fallback").
+      Wrap the invocation with the `tryLookupHelper` helper to determine if it is a helper at runtime and fall back to the `this` property if not ("ambiguous attribute fallback").
 
       ```hbs
       {{! before }}
       <Parent id={{property}} />
 
       {{! after }}
-      <Parent
-        id={{(if
-          (isHelper "property") (lookupHelper "property") this.property
-        )}}
-      />
+      {{#let (hash property=(tryLookupHelper "property")) as |maybeHelpers|}}
+        <Parent
+          id={{(if
+            maybeHelpers.property (maybeHelpers.property) this.property
+          )}}
+        />
+      {{/let}}
       ```
 
     - Otherwise:
 
-      Wrap the invocation with an `isInvocable` helper to determine if it is a component or helper at runtime and fallback to the `this` property if not ("ambiguous statement fallback").
+      Wrap the invocation with the `isComponent` helper to determine if it is a component at runtime and invoke it as a component if so. If not, wrap the invocation with the `tryLookupHelper` helper to determine if it is a helper ad runtime and fall back to the `this` property if not ("ambiguous statement fallback").
 
       ```hbs
       {{! before }}
       {{property}}
 
       {{! after }}
-      {{#if (isInvocable "property")}}
-        {{property}}
+      {{#if (isComponent "property")}}
+        <Property />
       {{else}}
-        {{this.property}}
+        {{#let (hash property=(tryLookupHelper "property")) as |maybeHelpers|}}
+          {{(if maybeHelpers.property (maybeHelpers.property) this.property)}}
+        {{/let}}
       {{/if}}
       ```
 
@@ -86,7 +90,7 @@ For each `PathExpression` with a `VarHead` that is NOT in the local template sco
 
 #### Runtime implications
 
-The `isInvocable`, `isHelper`, and `lookupHelper` helpers have runtime implications that may have performance impacts. Thus, we recommend relying on this addon only temporarily to unblock 4.0+ upgrades while continuing to migrate away from reliance on the Property Fallback Lookup feature.
+The `isComponent` and `tryLookupHelper` helpers have runtime implications that may have performance impacts. Thus, we recommend relying on this addon only temporarily to unblock 4.0+ upgrades while continuing to migrate away from reliance on the Property Fallback Lookup feature.
 
 #### Embroider compatibility
 

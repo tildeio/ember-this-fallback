@@ -82,6 +82,16 @@ class ScopeFrame {
 export default class ScopeStack {
   private head = new ScopeFrame(GLOBALS, null);
 
+  get size(): number {
+    let length = 0;
+    let current: ScopeFrame | null = this.head;
+    while (current) {
+      length++;
+      current = current.parent;
+    }
+    return length;
+  }
+
   /** Add a new scope frame with the given variable names. */
   push(locals: string[]): void {
     this.head = this.head.child(locals);
@@ -115,4 +125,19 @@ export function headNotInScope(
   scope: ScopeStack
 ): head is AST.VarHead {
   return head.type === 'VarHead' && !scope.has(head.name);
+}
+
+/**
+ * Gives a local variable name matching the desired name if it is not already
+ * within scope.
+ * If the desired name is already within scope, it will be suffixed with a
+ * number to ensure it does not overwrite an existing local variable.
+ */
+export function unusedNameLike(desiredName: string, scope: ScopeStack): string {
+  let candidate = desiredName;
+  let counter = 0;
+  while (scope.has(candidate)) {
+    candidate = `${desiredName}${counter++}`;
+  }
+  return candidate;
 }

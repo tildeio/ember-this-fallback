@@ -1,24 +1,23 @@
 'use strict';
 
-var ThisFallbackPlugin = require('./lib/this-fallback-plugin');
-
 module.exports = {
   name: require('./package').name,
 
-  included: function () {
-    const plugin = ThisFallbackPlugin;
-    plugin.baseDir = () => {
-      return __dirname;
-    };
-    plugin.cacheKey = () => {
-      return 'ember-this-fallback';
-    };
+  setupPreprocessorRegistry: function (type, registry) {
+    registry.add('htmlbars-ast-plugin', this._buildPlugin());
+  },
 
-    this.app.registry.add('htmlbars-ast-plugin', {
+  _buildPlugin() {
+    const ThisFallbackPlugin = require('./lib/this-fallback-plugin');
+
+    // HACK: Seems strange that this is necessary, but without it we get:
+    // broccoli-babel-transpiler is opting out of caching due to a plugin that does not provide a caching strategy
+    ThisFallbackPlugin.baseDir = () => __dirname;
+
+    return {
       name: 'ember-this-fallback',
-      plugin,
-    });
-
-    Reflect.apply(this._super.included, this, arguments);
+      baseDir: () => __dirname,
+      plugin: ThisFallbackPlugin,
+    };
   },
 };

@@ -4,17 +4,17 @@ import { assertExists } from './types/util';
 
 type Positional = [name: string];
 
-interface IsHelperSignature {
+interface IsComponentSignature {
   Args: {
     Positional: Positional;
   };
   Return: boolean;
 }
 
-/** Checks if a helper with the provided name exists. */
-export default class IsHelper extends Helper<IsHelperSignature> {
+/** Checks if a component with the provided name exists. */
+export default class IsComponent extends Helper<IsComponentSignature> {
   compute([name]: Positional): boolean {
     const owner = assertExists(getOwner(this), 'Could not find owner');
-    return Boolean(owner.factoryFor(`helper:${name}`));
+    return Boolean(owner.factoryFor(`component:${name}`));
   }
 }

@@ -19,7 +19,7 @@ export default globalHelper;
 
 declare module '@glint/environment-ember-loose/registry' {
   export default interface Registry {
-    /** A helper that exists (for testing this-fallback/is-helper). */
+    /** A helper that exists (for testing this-fallback/try-lookup-helper). */
     'global-helper': typeof globalHelper;
   }
 }
