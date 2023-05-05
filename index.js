@@ -1,19 +1,23 @@
 'use strict';
 
-var HelloTransform = require('./lib/hello');
-
 module.exports = {
   name: require('./package').name,
 
-  included: function () {
-    // we have to wrap these in an object so the ember-cli
-    // registry doesn't try to call `new` on them (new is actually
-    // called within htmlbars when compiling a given template).
-    this.app.registry.add('htmlbars-ast-plugin', {
-      name: 'hello-transform',
-      plugin: HelloTransform,
-    });
+  setupPreprocessorRegistry: function (type, registry) {
+    registry.add('htmlbars-ast-plugin', this._buildPlugin());
+  },
 
-    Reflect.apply(this._super.included, this, arguments);
+  _buildPlugin() {
+    const ThisFallbackPlugin = require('./lib/this-fallback-plugin');
+
+    // HACK: Seems strange that this is necessary, but without it we get:
+    // broccoli-babel-transpiler is opting out of caching due to a plugin that does not provide a caching strategy
+    ThisFallbackPlugin.baseDir = () => __dirname;
+
+    return {
+      name: 'ember-this-fallback',
+      baseDir: () => __dirname,
+      plugin: ThisFallbackPlugin,
+    };
   },
 };
