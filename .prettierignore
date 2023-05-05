@@ -27,3 +27,5 @@ ember-this-fallback-plugin.log
 /yarn.lock.ember-try
 
 ember-cli-update.json
+
+CHANGELOG.md
