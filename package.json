@@ -28,6 +28,7 @@
     "lint:prettier": "prettier --check .",
     "lint:prettier:fix": "prettier --write .",
     "lint:types": "glint",
+    "test:ember-compatibility": "yarn build:ts && ember try:each",
     "prepack": "yarn build:ts",
     "postpack": "yarn clean",
     "release": "dotenv release-it",
@@ -35,7 +36,6 @@
     "start": "yarn build:ts && ember serve && yarn clean",
     "test": "concurrently \"npm:lint\" \"npm:test:*\" --names \"lint,test:\"",
     "test:ember": "yarn build:ts && ember test && yarn clean",
-    "test:ember-compatibility": "yarn build:ts && ember try:each",
     "test:lib": "jest ./lib/tests/*.test.ts"
   },
   "dependencies": {
@@ -74,7 +74,7 @@
     "concurrently": "^8.0.1",
     "dotenv-cli": "^7.2.1",
     "ember-auto-import": "^2.6.3",
-    "ember-cli": "~4.11.0",
+    "ember-cli": "~4.12.1",
     "ember-cli-dependency-checker": "^3.3.1",
     "ember-cli-inject-live-reload": "^2.1.0",
     "ember-cli-sri": "^2.1.1",
@@ -84,7 +84,7 @@
     "ember-page-title": "^7.0.0",
     "ember-qunit": "^6.2.0",
     "ember-resolver": "^10.1.0",
-    "ember-source": "~4.11.0",
+    "ember-source": "~4.12.0",
     "ember-source-channel-url": "^3.0.0",
     "ember-template-imports": "^3.4.2",
     "ember-template-lint": "^5.7.3",
