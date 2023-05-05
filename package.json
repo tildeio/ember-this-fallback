@@ -32,7 +32,6 @@
     "prepack": "yarn build:ts",
     "postpack": "yarn clean",
     "release": "dotenv release-it",
-    "release:dry": "dotenv release-it --dry-run",
     "start": "yarn build:ts && ember serve && yarn clean",
     "test": "concurrently \"npm:lint\" \"npm:test:*\" --names \"lint,test:\"",
     "test:ember": "yarn build:ts && ember test && yarn clean",
