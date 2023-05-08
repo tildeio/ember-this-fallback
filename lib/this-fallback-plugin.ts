@@ -15,13 +15,19 @@ import {
 } from 'babel-plugin-ember-template-compilation';
 import { isNode } from './helpers/ast';
 import {
+  deprecationOptionsFor,
+  type Deprecation,
+  type DeprecationId,
+} from './helpers/deprecations';
+import {
   ambiguousAttrFallbackWarning,
   ambiguousStatementFallback,
   ambiguousStatementFallbackWarning,
   expressionFallback,
   helperOrExpressionFallback,
-  maybeExpressionFallback,
+  maybeAddDeprecationsHelper,
   mustacheNeedsFallback,
+  needsFallback,
   wrapWithTryLookup,
 } from './helpers/fallback';
 import createLogger, { type Logger } from './helpers/logger';
@@ -34,6 +40,11 @@ type Env = WithJSUtils<ASTPluginEnvironment> & {
 };
 
 class ThisFallbackPlugin implements ASTPlugin {
+  private readonly deprecations: Deprecation[] = [];
+
+  private readonly bindImport: JSUtils['bindImport'] = (...args) =>
+    this.env.meta.jsutils.bindImport(...args);
+
   constructor(
     readonly name: string,
     private readonly env: Env,
@@ -41,7 +52,7 @@ class ThisFallbackPlugin implements ASTPlugin {
   ) {}
 
   readonly visitor: NodeVisitor = {
-    Template: this.handleDebug(),
+    Template: this.handleTemplate(),
 
     Block: this.handleBlock<AST.Block>(),
 
@@ -126,16 +137,25 @@ class ThisFallbackPlugin implements ASTPlugin {
         }
 
         if (ambiguousHeads.size > 0) {
-          // Only logs the first one to avoid mega-log-spew.
-          const firstIssue = [...ambiguousHeads.entries()][0]!;
-          this.logger.warn({
-            message: ambiguousAttrFallbackWarning(firstIssue[0]),
-            loc: firstIssue[1],
-          });
+          const headsToLookup = new Set<string>();
+          for (const [index, [path, loc]] of [
+            ...ambiguousHeads.entries(),
+          ].entries()) {
+            headsToLookup.add(path);
+            this.deprecateFallback(path);
+            if (index === 0) {
+              // Only log the first one to avoid mega-log-spew.
+              this.logger.warn({
+                message: ambiguousAttrFallbackWarning(path),
+                loc,
+              });
+            }
+          }
+
           return wrapWithTryLookup(
             elementPath,
             elementPath.node,
-            new Set(ambiguousHeads.keys()),
+            headsToLookup,
             blockParamName,
             this.bindImport
           );
@@ -155,14 +175,27 @@ class ThisFallbackPlugin implements ASTPlugin {
     return {
       keys: {
         params: (node): void => {
-          node.params = node.params.map((expr) =>
-            maybeExpressionFallback(expr, this.scopeStack)
-          );
+          const { scopeStack } = this;
+          node.params = node.params.map((expr) => {
+            if (needsFallback(expr, scopeStack)) {
+              this.deprecateFallback(expr.head.name);
+              return expressionFallback(expr);
+            } else {
+              return expr;
+            }
+          });
         },
         hash: (node): void => {
-          node.hash.pairs = node.hash.pairs.map(({ key, value: expr, loc }) =>
-            b.pair(key, maybeExpressionFallback(expr, this.scopeStack), loc)
-          );
+          const { scopeStack } = this;
+          node.hash.pairs = node.hash.pairs.map((pair) => {
+            const { key, value: expr, loc } = pair;
+            if (needsFallback(expr, scopeStack)) {
+              this.deprecateFallback(expr.head.name);
+              return b.pair(key, expressionFallback(expr), loc);
+            } else {
+              return pair;
+            }
+          });
         },
       },
     };
@@ -185,6 +218,7 @@ class ThisFallbackPlugin implements ASTPlugin {
             path.parentNode?.type !== 'AttrNode' ||
               path.parentNode.name.startsWith('@')
           );
+          this.deprecateFallback(n.path.head.name);
           if (n.path.tail.length > 0) {
             node.path = expressionFallback(n.path);
             return node;
@@ -206,26 +240,49 @@ class ThisFallbackPlugin implements ASTPlugin {
     };
   }
 
-  private readonly bindImport: JSUtils['bindImport'] = (...args) =>
-    this.env.meta.jsutils.bindImport(...args);
-
-  private handleDebug(): {
+  private handleTemplate(): {
     enter: (node: AST.Template) => void;
-    exit: (node: AST.Template) => void;
+    exit: (node: AST.Template, path: WalkerPath<AST.Template>) => void;
   } {
     return {
       enter: (node): void => {
         this.logger.debug("before: '%s'", squish(print(node)));
       },
-      exit: (node): void => {
+      exit: (node, path): void => {
         this.logger.debug("after_: '%s'", squish(print(node)));
         if (this.scopeStack.size !== 1) {
           throw new Error(
             `unbalanced ScopeStack push and pop, ScopeStack size is ${this.scopeStack.size}`
           );
         }
+
+        maybeAddDeprecationsHelper(
+          node,
+          path,
+          this.deprecations,
+          this.bindImport
+        );
       },
     };
+  }
+
+  private deprecate(
+    message: string,
+    test: unknown,
+    { id }: { id: DeprecationId }
+  ): void {
+    if (!test) {
+      this.deprecations.push([message, false, deprecationOptionsFor(id)]);
+    }
+  }
+
+  private deprecateFallback(headName: string): void {
+    this.deprecate(
+      // Matches message from https://github.com/glimmerjs/glimmer-vm/pull/1259
+      `The \`${headName}\` property path was used in the \`${this.env.moduleName}\` template without using \`this\`. This fallback behavior has been deprecated, all properties must be looked up on \`this\` when used in the template: {{this.${headName}}}`,
+      false,
+      { id: 'this-property-fallback' }
+    );
   }
 }
 
