@@ -1,5 +1,9 @@
 import { render } from '@ember/test-helpers';
 import { setupRenderingTest } from 'dummy/tests/helpers';
+import {
+  expectDeprecations,
+  fallbackDeprecationExpectation,
+} from 'dummy/tests/helpers/deprecations';
 import { hbs } from 'ember-cli-htmlbars';
 import { module, test } from 'qunit';
 
@@ -38,6 +42,7 @@ module('Integration | Plugin | SubExpression', function (hooks) {
             .hasText(
               'global-modifier-result global-helper-result property-on-this'
             );
+          expectDeprecations(fallbackDeprecationExpectation('property'));
         });
 
         test('handles this-fallback with tail', async function (assert) {
@@ -54,6 +59,7 @@ module('Integration | Plugin | SubExpression', function (hooks) {
             .hasText(
               'global-modifier-result global-helper-result property-on-this'
             );
+          expectDeprecations(fallbackDeprecationExpectation('property'));
         });
       });
 
@@ -100,6 +106,7 @@ module('Integration | Plugin | SubExpression', function (hooks) {
             .hasText(
               'global-modifier-result global-helper-result property-on-this'
             );
+          expectDeprecations(fallbackDeprecationExpectation('property'));
         });
 
         test('handles this-fallback with tail', async function (assert) {
@@ -116,6 +123,7 @@ module('Integration | Plugin | SubExpression', function (hooks) {
             .hasText(
               'global-modifier-result global-helper-result property-on-this'
             );
+          expectDeprecations(fallbackDeprecationExpectation('property'));
         });
       });
 

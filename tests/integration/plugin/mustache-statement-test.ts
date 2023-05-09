@@ -1,6 +1,10 @@
 import { render } from '@ember/test-helpers';
 import { setupRenderingTest } from 'dummy/tests/helpers';
 import {
+  expectDeprecations,
+  fallbackDeprecationExpectation,
+} from 'dummy/tests/helpers/deprecations';
+import {
   localHelperNamed,
   localHelperPositional,
 } from 'dummy/tests/helpers/helpers';
@@ -338,6 +342,7 @@ module('Integration | Plugin | MustacheStatement', function (hooks) {
               {{global-helper property}}
             `);
             assert.dom().hasText('global-helper-result property-on-this');
+            expectDeprecations(fallbackDeprecationExpectation('property'));
           });
         });
 
@@ -462,6 +467,7 @@ module('Integration | Plugin | MustacheStatement', function (hooks) {
               {{/global-component}}
             `);
             assert.dom().hasText('global-component-contents property-on-this');
+            expectDeprecations(fallbackDeprecationExpectation('property'));
           });
         });
 

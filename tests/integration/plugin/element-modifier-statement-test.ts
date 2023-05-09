@@ -1,5 +1,9 @@
 import { render } from '@ember/test-helpers';
 import { setupRenderingTest } from 'dummy/tests/helpers';
+import {
+  expectDeprecations,
+  fallbackDeprecationExpectation,
+} from 'dummy/tests/helpers/deprecations';
 import { hbs } from 'ember-cli-htmlbars';
 import { module, test } from 'qunit';
 
@@ -26,6 +30,7 @@ module('Integration | Plugin | ElementModifierStatement', function (hooks) {
             <div {{global-modifier property}} />
           `);
           assert.dom().hasText('global-modifier-result property-on-this');
+          expectDeprecations(fallbackDeprecationExpectation('property'));
         });
 
         test('handles this-fallback with tail', async function (assert) {
@@ -38,6 +43,7 @@ module('Integration | Plugin | ElementModifierStatement', function (hooks) {
             <div {{global-modifier property.tail}} />
           `);
           assert.dom().hasText('global-modifier-result property-on-this');
+          expectDeprecations(fallbackDeprecationExpectation('property'));
         });
       });
 
@@ -74,6 +80,7 @@ module('Integration | Plugin | ElementModifierStatement', function (hooks) {
             <div {{global-modifier arg=property}} />
           `);
           assert.dom().hasText('global-modifier-result property-on-this');
+          expectDeprecations(fallbackDeprecationExpectation('property'));
         });
 
         test('handles this-fallback with tail', async function (assert) {
@@ -86,6 +93,7 @@ module('Integration | Plugin | ElementModifierStatement', function (hooks) {
             <div {{global-modifier arg=property.tail}} />
           `);
           assert.dom().hasText('global-modifier-result property-on-this');
+          expectDeprecations(fallbackDeprecationExpectation('property'));
         });
       });
 

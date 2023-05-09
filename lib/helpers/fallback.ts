@@ -1,5 +1,6 @@
 import { builders as b, type AST, type WalkerPath } from '@glimmer/syntax';
 import { type JSUtils } from 'babel-plugin-ember-template-compilation';
+import { type Deprecation } from './deprecations';
 import type ScopeStack from './scope-stack';
 import { headNotInScope, unusedNameLike } from './scope-stack';
 import { classify } from './string';
@@ -65,16 +66,6 @@ export function expressionFallback(
   const tail = `${expr.tail.length > 0 ? '.' : ''}${expr.tail.join('.')}`;
   const thisPath = `this.${expr.head.name}${tail}`;
   return b.path(thisPath, expr.loc);
-}
-
-/**
- * Performs `expressionFallback` only if `needsFallback` is `true`.
- */
-export function maybeExpressionFallback(
-  expr: AST.Expression,
-  scope: ScopeStack
-): AST.Expression {
-  return needsFallback(expr, scope) ? expressionFallback(expr) : expr;
 }
 
 /**
@@ -239,4 +230,26 @@ function explicitHelperSuggestion(name: string): string {
 
 function thisPropertySuggestion(name: string): string {
   return `prefacing a known property on \`this\` with \`this\`: \`{{this.${name}}}\``;
+}
+
+// FIXME: Return void or AST.Template?
+export function maybeAddDeprecationsHelper(
+  template: AST.Template,
+  templatePath: WalkerPath<AST.Template>,
+  deprecations: Deprecation[],
+  bindImport: JSUtils['bindImport']
+): void {
+  if (deprecations.length > 0) {
+    const deprecationsHelper = bindImport(
+      'ember-this-fallback/deprecations-helper',
+      'default',
+      templatePath,
+      { nameHint: 'deprecations-helper' }
+    );
+    template.body.push(
+      b.mustache(b.path(deprecationsHelper), [
+        b.string(JSON.stringify(deprecations)),
+      ])
+    );
+  }
 }
