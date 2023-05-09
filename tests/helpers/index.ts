@@ -1,3 +1,4 @@
+import { setupDeprecationHelpers } from 'dummy/tests/helpers/deprecations';
 import {
   setupApplicationTest as upstreamSetupApplicationTest,
   setupRenderingTest as upstreamSetupRenderingTest,
@@ -29,6 +30,8 @@ function setupApplicationTest(
   //
   // setupIntl(hooks); // ember-intl
   // setupMirage(hooks); // ember-cli-mirage
+
+  setupDeprecationHelpers(hooks);
 }
 
 function setupRenderingTest(
@@ -38,12 +41,16 @@ function setupRenderingTest(
   upstreamSetupRenderingTest(hooks, options);
 
   // Additional setup for rendering tests can be done here.
+
+  setupDeprecationHelpers(hooks);
 }
 
 function setupTest(hooks: NestedHooks, options?: SetupTestOptions): void {
   upstreamSetupTest(hooks, options);
 
   // Additional setup for unit tests can be done here.
+
+  setupDeprecationHelpers(hooks);
 }
 
 export { setupApplicationTest, setupRenderingTest, setupTest };
