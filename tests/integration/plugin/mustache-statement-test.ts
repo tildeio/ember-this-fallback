@@ -177,6 +177,7 @@ module('Integration | Plugin | MustacheStatement', function (hooks) {
               {{property.tail}}
             `);
             assert.dom().hasText('property-on-this');
+            expectDeprecations(fallbackDeprecationExpectation('property'));
           });
 
           test('does nothing to ThisHead PathExpression', async function (assert) {

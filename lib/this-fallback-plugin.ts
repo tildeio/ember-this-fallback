@@ -212,6 +212,7 @@ class ThisFallbackPlugin implements ASTPlugin {
             path.parentNode?.type !== 'AttrNode'
           );
           if (n.path.tail.length > 0) {
+            this.deprecateFallback(n.path.head.name);
             node.path = expressionFallback(n.path);
             return node;
           } else {
