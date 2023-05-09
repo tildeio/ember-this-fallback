@@ -117,10 +117,12 @@ class DeprecationAssert {
 
 export function fallbackDeprecationExpectation(headName: string): {
   message: RegExp;
+  options: Partial<DeprecationOptions>;
 } {
   return {
     message: new RegExp(
       `The \`${headName}\` property path was used in the \`\\S*test.ts\` template without using \`this\`. This fallback behavior has been deprecated, all properties must be looked up on \`this\` when used in the template: {{this.${headName}}}`
     ),
+    options: { id: 'this-property-fallback' },
   };
 }

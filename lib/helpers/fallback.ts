@@ -63,6 +63,7 @@ export function mustacheNeedsFallback(
 export function expressionFallback(
   expr: AmbiguousPathExpression
 ): AST.PathExpression {
+  // FIXME: Invoke helper here
   const tail = `${expr.tail.length > 0 ? '.' : ''}${expr.tail.join('.')}`;
   const thisPath = `this.${expr.head.name}${tail}`;
   return b.path(thisPath, expr.loc);

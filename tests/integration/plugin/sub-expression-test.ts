@@ -1,5 +1,6 @@
 import { render } from '@ember/test-helpers';
 import { setupRenderingTest } from 'dummy/tests/helpers';
+import { expectDeprecation } from 'dummy/tests/helpers/deprecations';
 import { hbs } from 'ember-cli-htmlbars';
 import { module, test } from 'qunit';
 
@@ -88,13 +89,22 @@ module('Integration | Plugin | SubExpression', function (hooks) {
       module('head not in scope', function () {
         test('handles this-fallback', async function (assert) {
           this.set('property', 'property-on-this');
-          await render<{ property: string }>(hbs`
+          await expectDeprecation(
+            async () => {
+              await render<{ property: string }>(hbs`
             {{!--
               @glint-expect-error:
               Unknown name 'property' (Glint knows better than to let us do this)
             --}}
             <div {{global-modifier (global-helper arg=property)}} />
           `);
+            },
+            {
+              message:
+                /The `property` property path was used in the `\S*test.ts` template without using `this`. This fallback behavior has been deprecated, all properties must be looked up on `this` when used in the template: {{this.property}}/,
+            }
+          );
+
           assert
             .dom()
             .hasText(

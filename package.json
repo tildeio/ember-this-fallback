@@ -34,7 +34,7 @@
     "release": "dotenv release-it",
     "start": "yarn build:ts && ember serve && yarn clean",
     "test": "concurrently \"npm:lint\" \"npm:test:*\" --names \"lint,test:\"",
-    "test:ember": "yarn build:ts && ember test && yarn clean",
+    "test:ember": "yarn build:ts && ember test -s && yarn clean",
     "test:lib": "jest ./lib/tests/*.test.ts"
   },
   "dependencies": {

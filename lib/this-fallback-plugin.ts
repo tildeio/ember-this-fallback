@@ -142,7 +142,6 @@ class ThisFallbackPlugin implements ASTPlugin {
             ...ambiguousHeads.entries(),
           ].entries()) {
             headsToLookup.add(path);
-            this.deprecateFallback(path);
             if (index === 0) {
               // Only log the first one to avoid mega-log-spew.
               this.logger.warn({
