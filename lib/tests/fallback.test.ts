@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, test } from '@jest/globals';
 import { type JSUtils } from 'babel-plugin-ember-template-compilation';
 import {
   ambiguousStatementFallback,
-  expressionFallback,
+  buildtimeExpressionFallback,
   helperOrExpressionFallback,
   mustacheNeedsFallback,
   needsFallback,
@@ -80,7 +80,9 @@ describe('fallback helpers', () => {
         describe(print(testCase), () => {
           test('has this-fallback', () => {
             expect(
-              print(expressionFallback(testCase as AmbiguousPathExpression))
+              print(
+                buildtimeExpressionFallback(testCase as AmbiguousPathExpression)
+              )
             ).toEqual(`this.${print(testCase)}`);
           });
         });
@@ -150,7 +152,7 @@ describe('fallback helpers', () => {
         test('has this-fallback', () => {
           expect(
             print(
-              expressionFallback(
+              buildtimeExpressionFallback(
                 needsExpressionFallback.path as AmbiguousPathExpression
               )
             )
@@ -162,15 +164,19 @@ describe('fallback helpers', () => {
     describe('helperOrExpressionFallback', () => {
       describe(print(needsAmbiguousFallback), () => {
         test('has this-fallback', () => {
+          const path = new WalkerPath(needsAmbiguousFallback);
           expect(
             print(
               helperOrExpressionFallback(
                 'maybeHelpers',
-                needsAmbiguousFallback as AmbiguousMustacheExpression
+                needsAmbiguousFallback as AmbiguousMustacheExpression,
+                path,
+                mockBindImport,
+                false
               )
             )
           ).toEqual(
-            `(if maybeHelpers.${NOT_IN_SCOPE} (maybeHelpers.${NOT_IN_SCOPE}) this.${NOT_IN_SCOPE})`
+            `(if maybeHelpers.${NOT_IN_SCOPE} (maybeHelpers.${NOT_IN_SCOPE}) (thisFallbackHelper this "${NOT_IN_SCOPE}" false))`
           );
         });
       });
@@ -207,13 +213,14 @@ describe('fallback helpers', () => {
                 needsAmbiguousFallback as AmbiguousMustacheExpression,
                 path,
                 mockBindImport,
-                scopeStack
+                scopeStack,
+                false
               )
             )
           ).toEqual(
             `{{#if (isComponent "${NOT_IN_SCOPE}")}}<${classify(
               NOT_IN_SCOPE
-            )} />{{else}}{{#let (hash ${NOT_IN_SCOPE}=(try-lookup-helper "${NOT_IN_SCOPE}")) as |maybeHelpers|}}{{(if maybeHelpers.${NOT_IN_SCOPE} (maybeHelpers.${NOT_IN_SCOPE}) this.${NOT_IN_SCOPE})}}{{/let}}{{/if}}`
+            )} />{{else}}{{#let (hash ${NOT_IN_SCOPE}=(try-lookup-helper "${NOT_IN_SCOPE}")) as |maybeHelpers|}}{{(if maybeHelpers.${NOT_IN_SCOPE} (maybeHelpers.${NOT_IN_SCOPE}) (thisFallbackHelper this "${NOT_IN_SCOPE}" false))}}{{/let}}{{/if}}`
           );
         });
       });

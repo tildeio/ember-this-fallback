@@ -1,5 +1,9 @@
 import { render } from '@ember/test-helpers';
 import { setupRenderingTest } from 'dummy/tests/helpers';
+import {
+  expectDeprecations,
+  fallbackDeprecationExpectation,
+} from 'dummy/tests/helpers/deprecations';
 import { hbs } from 'ember-cli-htmlbars';
 import { module, test } from 'qunit';
 
@@ -32,6 +36,10 @@ module('Integration | Plugin | scope', function (hooks) {
       .hasText(
         'property-on-this in-scope in-scope-2 in-scope property-on-this'
       );
+    expectDeprecations(
+      fallbackDeprecationExpectation('property'),
+      fallbackDeprecationExpectation('property')
+    );
   });
 
   test('it keeps track of local scope in Element Nodes', async function (assert) {
@@ -60,6 +68,10 @@ module('Integration | Plugin | scope', function (hooks) {
       .hasText(
         'property-on-this global-component-contents in-scope global-component-contents in-scope-2 in-scope property-on-this'
       );
+    expectDeprecations(
+      fallbackDeprecationExpectation('property'),
+      fallbackDeprecationExpectation('property')
+    );
   });
 
   test('it keeps track of local scope in mixed Block and Element Nodes', async function (assert) {
@@ -88,5 +100,9 @@ module('Integration | Plugin | scope', function (hooks) {
       .hasText(
         'property-on-this in-scope global-component-contents in-scope-2 in-scope property-on-this'
       );
+    expectDeprecations(
+      fallbackDeprecationExpectation('property'),
+      fallbackDeprecationExpectation('property')
+    );
   });
 });

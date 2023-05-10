@@ -3,7 +3,7 @@ import assert from '../types/assert';
 
 export type Deprecation = Parameters<typeof deprecate>;
 
-type DeprecationOptions = Deprecation[2];
+export type DeprecationOptions = Deprecation[2];
 
 const CURRENT_DEPRECATIONS = [
   {

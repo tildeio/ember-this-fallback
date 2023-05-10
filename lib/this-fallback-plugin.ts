@@ -17,13 +17,13 @@ import { isNode } from './helpers/ast';
 import {
   deprecationOptionsFor,
   type Deprecation,
-  type DeprecationId,
+  type DeprecationOptions,
 } from './helpers/deprecations';
 import {
   ambiguousAttrFallbackWarning,
   ambiguousStatementFallback,
   ambiguousStatementFallbackWarning,
-  expressionFallback,
+  buildtimeExpressionFallback,
   helperOrExpressionFallback,
   maybeAddDeprecationsHelper,
   mustacheNeedsFallback,
@@ -117,7 +117,10 @@ class ThisFallbackPlugin implements ASTPlugin {
               ambiguousHeads.set(value.path.head.name, value.loc);
               attrNode.value.path = helperOrExpressionFallback(
                 blockParamName,
-                value
+                value,
+                elementPath,
+                this.bindImport,
+                this.makeFallbackDeprecation(value.path.head.name)
               );
             }
           } else if (isNode(value, 'ConcatStatement')) {
@@ -133,7 +136,13 @@ class ThisFallbackPlugin implements ASTPlugin {
                   isNode(part, 'MustacheStatement')
                 );
                 ambiguousHeads.set(p.path.head.name, p.loc);
-                part.path = helperOrExpressionFallback(blockParamName, p);
+                part.path = helperOrExpressionFallback(
+                  blockParamName,
+                  p,
+                  elementPath,
+                  this.bindImport,
+                  this.makeFallbackDeprecation(p.path.head.name)
+                );
               }
             }
           }
@@ -173,7 +182,7 @@ class ThisFallbackPlugin implements ASTPlugin {
           node.params = node.params.map((expr) => {
             if (needsFallback(expr, scopeStack)) {
               this.deprecateFallback(expr.head.name);
-              return expressionFallback(expr);
+              return buildtimeExpressionFallback(expr);
             } else {
               return expr;
             }
@@ -185,7 +194,7 @@ class ThisFallbackPlugin implements ASTPlugin {
             const { key, value: expr, loc } = pair;
             if (needsFallback(expr, scopeStack)) {
               this.deprecateFallback(expr.head.name);
-              return b.pair(key, expressionFallback(expr), loc);
+              return b.pair(key, buildtimeExpressionFallback(expr), loc);
             } else {
               return pair;
             }
@@ -213,7 +222,7 @@ class ThisFallbackPlugin implements ASTPlugin {
           );
           if (n.path.tail.length > 0) {
             this.deprecateFallback(n.path.head.name);
-            node.path = expressionFallback(n.path);
+            node.path = buildtimeExpressionFallback(n.path);
             return node;
           } else {
             this.logger.warn({
@@ -224,7 +233,8 @@ class ThisFallbackPlugin implements ASTPlugin {
               n,
               path,
               this.bindImport,
-              this.scopeStack
+              this.scopeStack,
+              this.makeFallbackDeprecation(n.path.head.name)
             );
           }
         }
@@ -262,20 +272,26 @@ class ThisFallbackPlugin implements ASTPlugin {
   private deprecate(
     message: string,
     test: unknown,
-    { id }: { id: DeprecationId }
+    options: DeprecationOptions
   ): void {
     if (!test) {
-      this.deprecations.push([message, false, deprecationOptionsFor(id)]);
+      this.deprecations.push([message, false, options]);
     }
   }
 
   private deprecateFallback(headName: string): void {
-    this.deprecate(
+    this.deprecate(...this.makeFallbackDeprecation(headName));
+  }
+
+  private makeFallbackDeprecation(
+    headName: string
+  ): [message: string, test: unknown, options: DeprecationOptions] {
+    return [
       // Matches message from https://github.com/glimmerjs/glimmer-vm/pull/1259
       `The \`${headName}\` property path was used in the \`${this.env.moduleName}\` template without using \`this\`. This fallback behavior has been deprecated, all properties must be looked up on \`this\` when used in the template: {{this.${headName}}}`,
       false,
-      { id: 'this-property-fallback' }
-    );
+      deprecationOptionsFor('this-property-fallback'),
+    ];
   }
 }
 

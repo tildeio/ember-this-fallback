@@ -43,6 +43,7 @@ module('Integration | Plugin | MustacheStatement', function (hooks) {
               {{property}}
             `);
             assert.dom().hasText('property-on-this');
+            expectDeprecations(fallbackDeprecationExpectation('property'));
           });
 
           test('does nothing to ThisHead PathExpression', async function (assert) {
@@ -75,6 +76,7 @@ module('Integration | Plugin | MustacheStatement', function (hooks) {
               assert
                 .dom('[data-test-global-component]')
                 .hasAttribute('id', 'property-on-this');
+              expectDeprecations(fallbackDeprecationExpectation('property'));
             });
 
             test('does nothing to ThisHead PathExpression', async function (assert) {
@@ -206,6 +208,7 @@ module('Integration | Plugin | MustacheStatement', function (hooks) {
               assert
                 .dom('[data-test-global-component]')
                 .hasAttribute('id', 'property-on-this');
+              expectDeprecations(fallbackDeprecationExpectation('property'));
             });
 
             test('does nothing to ThisHead PathExpression', async function (assert) {
