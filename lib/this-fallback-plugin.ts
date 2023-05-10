@@ -92,7 +92,6 @@ class ThisFallbackPlugin implements ASTPlugin {
         for (const attrNode of elementNode.attributes) {
           const value = attrNode.value;
           if (
-            !attrNode.name.startsWith('@') &&
             isNode(value, 'MustacheStatement') &&
             mustacheNeedsFallback(value, this.scopeStack)
           ) {
@@ -101,11 +100,15 @@ class ThisFallbackPlugin implements ASTPlugin {
               'attrNode.value is not a MustacheStatement',
               isNode(attrNode.value, 'MustacheStatement')
             );
-            ambiguousHeads.set(value.path.head.name, value.loc);
-            attrNode.value.path = helperOrExpressionFallback(
-              blockParamName,
-              value
-            );
+            if (attrNode.name.startsWith('@')) {
+              attrNode.value.path = expressionFallback(value.path);
+            } else {
+              ambiguousHeads.set(value.path.head.name, value.loc);
+              attrNode.value.path = helperOrExpressionFallback(
+                blockParamName,
+                value
+              );
+            }
           } else if (isNode(value, 'ConcatStatement')) {
             for (const part of value.parts) {
               const p = part;
@@ -182,8 +185,7 @@ class ThisFallbackPlugin implements ASTPlugin {
         if (mustacheNeedsFallback(n, this.scopeStack)) {
           assert(
             'unexpected AmbiguousMustacheExpression in attribute value',
-            path.parentNode?.type !== 'AttrNode' ||
-              path.parentNode.name.startsWith('@')
+            path.parentNode?.type !== 'AttrNode'
           );
           if (n.path.tail.length > 0) {
             node.path = expressionFallback(n.path);

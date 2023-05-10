@@ -86,6 +86,22 @@ module('Integration | Plugin | MustacheStatement', function (hooks) {
           });
 
           module('for an @arg', function () {
+            test('has this-fallback', async function (assert) {
+              this.set('property', 'property-on-this');
+              await render<{ property: string }>(hbs`
+                {{!--
+                  @glint-expect-error:
+                  Unknown name 'property' (Glint knows better than to let us do this)
+                --}}
+                <GlobalComponent @arg={{property}} as |yielded|>
+                  {{yielded}}
+                </GlobalComponent>
+              `);
+              assert
+                .dom()
+                .hasText('global-component-contents property-on-this');
+            });
+
             test('does nothing to ThisHead PathExpression', async function (assert) {
               this.set('property', 'property-on-this');
               await render<{ property: string }>(hbs`

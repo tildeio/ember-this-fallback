@@ -51,23 +51,29 @@ For each `PathExpression` with a `VarHead` that is NOT in the local template sco
 
   - If there is NO `tail`:
 
-    - If the `MustacheStatement` is the child of an `AttrNode` with a name NOT starting with `@`:
+    - If the `MustacheStatement` is the child of an `AttrNode`
 
-      Wrap the invocation with the `tryLookupHelper` helper to determine if it is a helper at runtime and fall back to the `this` property if not ("ambiguous attribute fallback").
+      - And the `AttrNode` represents a component argument (the name starts with `'@'`):
 
-      ```hbs
-      {{! before }}
-      <Parent id={{property}} />
+        Prefix the `head` with `this`, making it a `ThisHead` ("expression fallback"), as shown above.
 
-      {{! after }}
-      {{#let (hash property=(tryLookupHelper "property")) as |maybeHelpers|}}
-        <Parent
-          id={{(if
-            maybeHelpers.property (maybeHelpers.property) this.property
-          )}}
-        />
-      {{/let}}
-      ```
+      - And the `AttrNode` represents an attribute (the name does not start with `'@'`):
+
+        Wrap the invocation with the `tryLookupHelper` helper to determine if it is a helper at runtime and fall back to the `this` property if not ("ambiguous attribute fallback").
+
+        ```hbs
+        {{! before }}
+        <Parent id={{property}} />
+
+        {{! after }}
+        {{#let (hash property=(tryLookupHelper "property")) as |maybeHelpers|}}
+          <Parent
+            id={{(if
+              maybeHelpers.property (maybeHelpers.property) this.property
+            )}}
+          />
+        {{/let}}
+        ```
 
     - Otherwise:
 
