@@ -124,4 +124,15 @@ module('Integration | Plugin | BlockStatement', function (hooks) {
       });
     });
   });
+
+  // TODO - this test should not be here. Just using as a demonstration
+  module("example failure", function(){
+    test("example", async function(assert){
+      this.set("someVar", "a-string")
+      await render(hbs`
+        <GlobalComponent @arg={{someVar}} />
+      `)
+      assert.dom().hasText('global-component-contents a-string')
+    })
+  })
 });
