@@ -216,6 +216,21 @@ export function ambiguousStatementFallback(
   );
 }
 
+export function maybeAddDeprecationsHelper(
+  template: AST.Template,
+  deprecations: Deprecation[],
+  binding: BindingConfig
+): void {
+  if (deprecations.length > 0) {
+    const deprecationsHelper = bindAddonHelper('deprecations-helper', binding);
+    template.body.push(
+      b.mustache(b.path(deprecationsHelper), [
+        b.string(JSON.stringify(deprecations)),
+      ])
+    );
+  }
+}
+
 export function ambiguousAttrFallbackWarning(headName: string): string[] {
   const original = `{{${headName}}}`;
 
@@ -250,22 +265,6 @@ function explicitHelperSuggestion(name: string): string {
 
 function thisPropertySuggestion(name: string): string {
   return `prefacing a known property on \`this\` with \`this\`: \`{{this.${name}}}\``;
-}
-
-// FIXME: Return void or AST.Template?
-export function maybeAddDeprecationsHelper(
-  template: AST.Template,
-  deprecations: Deprecation[],
-  binding: BindingConfig
-): void {
-  if (deprecations.length > 0) {
-    const deprecationsHelper = bindAddonHelper('deprecations-helper', binding);
-    template.body.push(
-      b.mustache(b.path(deprecationsHelper), [
-        b.string(JSON.stringify(deprecations)),
-      ])
-    );
-  }
 }
 
 function bindAddonHelper(
