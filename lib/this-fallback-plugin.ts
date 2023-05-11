@@ -119,9 +119,8 @@ class ThisFallbackPlugin implements ASTPlugin {
               attrNode.value.path = helperOrExpressionFallback(
                 blockParamName,
                 value,
-                elementPath,
-                this.bindImport,
-                this.makeFallbackDeprecation(value.path.head.name)
+                this.makeFallbackDeprecation(value.path.head.name),
+                { bindImport: this.bindImport, bindingTarget: elementPath }
               );
             }
           } else if (isNode(value, 'ConcatStatement')) {
@@ -140,9 +139,8 @@ class ThisFallbackPlugin implements ASTPlugin {
                 part.path = helperOrExpressionFallback(
                   blockParamName,
                   p,
-                  elementPath,
-                  this.bindImport,
-                  this.makeFallbackDeprecation(p.path.head.name)
+                  this.makeFallbackDeprecation(p.path.head.name),
+                  { bindImport: this.bindImport, bindingTarget: elementPath }
                 );
               }
             }
@@ -157,11 +155,10 @@ class ThisFallbackPlugin implements ASTPlugin {
             loc: firstIssue[1],
           });
           return wrapWithTryLookup(
-            elementPath,
             elementPath.node,
             new Set(ambiguousHeads.keys()),
             blockParamName,
-            this.bindImport
+            { bindImport: this.bindImport, bindingTarget: elementPath }
           );
         } else {
           return elementNode;
@@ -233,9 +230,9 @@ class ThisFallbackPlugin implements ASTPlugin {
             return ambiguousStatementFallback(
               n,
               path,
-              this.bindImport,
               this.scopeStack,
-              this.makeFallbackDeprecation(n.path.head.name)
+              this.makeFallbackDeprecation(n.path.head.name),
+              { bindImport: this.bindImport, bindingTarget: path }
             );
           }
         }
@@ -260,12 +257,10 @@ class ThisFallbackPlugin implements ASTPlugin {
           );
         }
 
-        maybeAddDeprecationsHelper(
-          node,
-          path,
-          this.deprecations,
-          this.bindImport
-        );
+        maybeAddDeprecationsHelper(node, this.deprecations, {
+          bindImport: this.bindImport,
+          bindingTarget: path,
+        });
       },
     };
   }

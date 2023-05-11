@@ -170,9 +170,8 @@ describe('fallback helpers', () => {
               helperOrExpressionFallback(
                 'maybeHelpers',
                 needsAmbiguousFallback as AmbiguousMustacheExpression,
-                path,
-                mockBindImport,
-                false
+                false,
+                { bindImport: mockBindImport, bindingTarget: path }
               )
             )
           ).toEqual(
@@ -189,15 +188,14 @@ describe('fallback helpers', () => {
           expect(
             print(
               wrapWithTryLookup(
-                path,
                 needsAmbiguousFallback as AmbiguousMustacheExpression,
                 new Set([NOT_IN_SCOPE]),
                 'maybeHelpers',
-                mockBindImport
+                { bindImport: mockBindImport, bindingTarget: path }
               )
             )
           ).toEqual(
-            `{{#let (hash ${NOT_IN_SCOPE}=(try-lookup-helper "${NOT_IN_SCOPE}")) as |maybeHelpers|}}{{${NOT_IN_SCOPE}}}{{/let}}`
+            `{{#let (hash ${NOT_IN_SCOPE}=(tryLookupHelper "${NOT_IN_SCOPE}")) as |maybeHelpers|}}{{${NOT_IN_SCOPE}}}{{/let}}`
           );
         });
       });
@@ -212,15 +210,15 @@ describe('fallback helpers', () => {
               ambiguousStatementFallback(
                 needsAmbiguousFallback as AmbiguousMustacheExpression,
                 path,
-                mockBindImport,
                 scopeStack,
-                false
+                false,
+                { bindImport: mockBindImport, bindingTarget: path }
               )
             )
           ).toEqual(
             `{{#if (isComponent "${NOT_IN_SCOPE}")}}<${classify(
               NOT_IN_SCOPE
-            )} />{{else}}{{#let (hash ${NOT_IN_SCOPE}=(try-lookup-helper "${NOT_IN_SCOPE}")) as |maybeHelpers|}}{{(if maybeHelpers.${NOT_IN_SCOPE} (maybeHelpers.${NOT_IN_SCOPE}) (thisFallbackHelper this "${NOT_IN_SCOPE}" false))}}{{/let}}{{/if}}`
+            )} />{{else}}{{#let (hash ${NOT_IN_SCOPE}=(tryLookupHelper "${NOT_IN_SCOPE}")) as |maybeHelpers|}}{{(if maybeHelpers.${NOT_IN_SCOPE} (maybeHelpers.${NOT_IN_SCOPE}) (thisFallbackHelper this "${NOT_IN_SCOPE}" false))}}{{/let}}{{/if}}`
           );
         });
       });
