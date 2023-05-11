@@ -86,11 +86,6 @@ function runtimeExpressionFallback(
   ]);
 }
 
-function stringifyPath(expr: AmbiguousPathExpression): string {
-  const tail = `${expr.tail.length > 0 ? '.' : ''}${expr.tail.join('.')}`;
-  return `${expr.head.name}${tail}`;
-}
-
 /**
  * Wraps a node with a `{{let}}` block that invokes the `tryLookupHelper` helper
  * to lookup the given ambiguous path heads as helpers at runtime. The results
@@ -272,4 +267,8 @@ function bindAddonHelper(
     bindingTarget,
     { nameHint: camelCase(helperName) }
   );
+}
+
+function stringifyPath(expr: AmbiguousPathExpression): string {
+  return [expr.head.name, ...expr.tail].join('.');
 }
