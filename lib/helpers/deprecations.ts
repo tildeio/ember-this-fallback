@@ -17,7 +17,7 @@ const CURRENT_DEPRECATIONS = [
   },
 ] satisfies readonly DeprecationOptions[];
 
-export type DeprecationId = (typeof CURRENT_DEPRECATIONS)[number]['id'];
+type DeprecationId = (typeof CURRENT_DEPRECATIONS)[number]['id'];
 
 const DEPRECATION_OPTIONS_MAP = new Map(
   CURRENT_DEPRECATIONS.map((options) => [options.id, options])

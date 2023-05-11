@@ -279,9 +279,7 @@ class ThisFallbackPlugin implements ASTPlugin {
     this.deprecate(...this.makeFallbackDeprecation(headName));
   }
 
-  private makeFallbackDeprecation(
-    headName: string
-  ): [message: string, test: unknown, options: DeprecationOptions] {
+  private makeFallbackDeprecation(headName: string): Deprecation {
     return [
       // Matches message from https://github.com/glimmerjs/glimmer-vm/pull/1259
       `The \`${headName}\` property path was used in the \`${this.env.moduleName}\` template without using \`this\`. This fallback behavior has been deprecated, all properties must be looked up on \`this\` when used in the template: {{this.${headName}}}`,

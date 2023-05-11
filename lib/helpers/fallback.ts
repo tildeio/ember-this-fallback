@@ -1,7 +1,7 @@
 import { builders as b, type AST, type WalkerPath } from '@glimmer/syntax';
 import { type JSUtils } from 'babel-plugin-ember-template-compilation';
 import { camelCase } from 'lodash';
-import { type Deprecation, type DeprecationOptions } from './deprecations';
+import { type Deprecation } from './deprecations';
 import type ScopeStack from './scope-stack';
 import { headNotInScope, unusedNameLike } from './scope-stack';
 import { classify } from './string';
@@ -75,9 +75,7 @@ export function buildtimeExpressionFallback(
 
 function runtimeExpressionFallback(
   expr: AmbiguousMustacheExpression,
-  deprecation:
-    | [message: string, test: unknown, options: DeprecationOptions]
-    | false,
+  deprecation: Deprecation | false,
   binding: BindingConfig
 ): AST.SubExpression {
   const thisFallbackHelper = bindAddonHelper('this-fallback-helper', binding);
@@ -149,9 +147,7 @@ export function wrapWithTryLookup(
 export function helperOrExpressionFallback(
   blockParamName: string,
   expr: AmbiguousMustacheExpression,
-  deprecation:
-    | [message: string, test: unknown, options: DeprecationOptions]
-    | false,
+  deprecation: Deprecation | false,
   binding: BindingConfig
 ): AST.SubExpression {
   const headName = expr.path.head.name;
@@ -187,9 +183,7 @@ export function ambiguousStatementFallback(
   expr: AmbiguousMustacheExpression,
   path: WalkerPath<AST.MustacheStatement>,
   scope: ScopeStack,
-  deprecation:
-    | [message: string, test: unknown, options: DeprecationOptions]
-    | false,
+  deprecation: Deprecation | false,
   binding: BindingConfig
 ): AST.BlockStatement {
   const headName = expr.path.head.name;
