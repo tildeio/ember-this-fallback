@@ -112,7 +112,8 @@ class ThisFallbackPlugin implements ASTPlugin {
               isNode(attrNode.value, 'MustacheStatement')
             );
             if (attrNode.name.startsWith('@')) {
-              attrNode.value.path = expressionFallback(value.path);
+              this.deprecateFallback(value.path.head.name);
+              attrNode.value.path = buildtimeExpressionFallback(value.path);
             } else {
               ambiguousHeads.set(value.path.head.name, value.loc);
               attrNode.value.path = helperOrExpressionFallback(

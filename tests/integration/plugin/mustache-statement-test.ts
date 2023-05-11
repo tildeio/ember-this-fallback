@@ -106,6 +106,7 @@ module('Integration | Plugin | MustacheStatement', function (hooks) {
               assert
                 .dom()
                 .hasText('global-component-contents property-on-this');
+              expectDeprecations(fallbackDeprecationExpectation('property'));
             });
 
             test('does nothing to ThisHead PathExpression', async function (assert) {
