@@ -1,9 +1,13 @@
 import { helper } from '@ember/component/helper';
 import { deprecate } from '@ember/debug';
+import { assertIsDeprecations } from 'ember-this-fallback/types/deprecations';
 
-type Deprecation = Parameters<typeof deprecate>;
-
-type Positional = [deprecationsJson: string];
+type Positional = [
+  /**
+   * A JSON stringified array of arrays of @ember/debug `deprecate` params.
+   */
+  deprecationsJson: string
+];
 
 interface DeprecationsHelperSignature {
   Args: {
@@ -11,11 +15,13 @@ interface DeprecationsHelperSignature {
   };
 }
 
-/** FIXME */
+/**
+ * Calls @ember/debug `deprecate` for each provided set of `deprecate` params.
+ */
 const deprecationsHelper = helper<DeprecationsHelperSignature>(
   ([deprecationsJson]) => {
-    // FIXME: Assert instead of cast
-    const deprecations = JSON.parse(deprecationsJson) as Deprecation[];
+    const deprecations = JSON.parse(deprecationsJson) as unknown;
+    assertIsDeprecations(deprecations);
     for (const deprecation of deprecations) {
       deprecate(...deprecation);
     }

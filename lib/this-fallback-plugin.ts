@@ -13,7 +13,7 @@ import {
   type JSUtils,
   type WithJSUtils,
 } from 'babel-plugin-ember-template-compilation';
-import { isNode } from './helpers/ast';
+import { assertIsNode, isNode } from './helpers/ast';
 import {
   deprecationOptionsFor,
   type Deprecation,
@@ -107,10 +107,7 @@ class ThisFallbackPlugin implements ASTPlugin {
             mustacheNeedsFallback(value, this.scopeStack)
           ) {
             // redundant but necessary because of overly strict types in @glimmer/syntax
-            assert(
-              'attrNode.value is not a MustacheStatement',
-              isNode(attrNode.value, 'MustacheStatement')
-            );
+            assertIsNode(attrNode.value, 'MustacheStatement');
             if (attrNode.name.startsWith('@')) {
               this.deprecateFallback(value.path.head.name);
               attrNode.value.path = buildtimeExpressionFallback(value.path);
@@ -131,10 +128,7 @@ class ThisFallbackPlugin implements ASTPlugin {
                 mustacheNeedsFallback(p, this.scopeStack)
               ) {
                 // redundant but necessary because of overly strict types in @glimmer/syntax
-                assert(
-                  'part is not a MustacheStatement',
-                  isNode(part, 'MustacheStatement')
-                );
+                assertIsNode(part, 'MustacheStatement');
                 ambiguousHeads.set(p.path.head.name, p.loc);
                 part.path = helperOrExpressionFallback(
                   blockParamName,
