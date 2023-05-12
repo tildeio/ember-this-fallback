@@ -126,6 +126,10 @@ or
 
 In the future, we could resolve this incompatibility if we had access to Embroider's static resolution.
 
+## Deprecations
+
+Because the intent of this library is to allow users to upgrade to Ember 4.0+ while they still in the process of resolving this-property-fallback deprecations, this library includes the [`this-property-fallback` deprecation from Ember 3.x](https://deprecations.emberjs.com/v3.x#toc_this-property-fallback). You can follow the instructions [here](https://guides.emberjs.com/release/configuring-ember/handling-deprecations/) for handling these deprecations.
+
 ## Contributing
 
 See the [Contributing](CONTRIBUTING.md) guide for details.
