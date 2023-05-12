@@ -3,8 +3,6 @@ import { deprecate } from '@ember/debug';
 import { get } from '@ember/object';
 import { assertIsDeprecation } from 'ember-this-fallback/types/deprecations';
 
-type Deprecation = Parameters<typeof deprecate>;
-
 type Positional<T, K extends keyof T> = [
   context: T,
   path: K,
@@ -23,8 +21,7 @@ const thisFallbackHelper = helper(
     K
   >) => {
     if (deprecationJson) {
-      const deprecation = JSON.parse(deprecationJson) as unknown;
-      assertIsDeprecation(deprecation);
+      const deprecation = assertIsDeprecation(JSON.parse(deprecationJson));
       deprecate(...deprecation);
     }
     return get(context, path);

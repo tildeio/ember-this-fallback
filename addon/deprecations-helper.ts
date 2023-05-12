@@ -20,8 +20,7 @@ interface DeprecationsHelperSignature {
  */
 const deprecationsHelper = helper<DeprecationsHelperSignature>(
   ([deprecationsJson]) => {
-    const deprecations = JSON.parse(deprecationsJson) as unknown;
-    assertIsDeprecations(deprecations);
+    const deprecations = assertIsDeprecations(JSON.parse(deprecationsJson));
     for (const deprecation of deprecations) {
       deprecate(...deprecation);
     }

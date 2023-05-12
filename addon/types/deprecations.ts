@@ -12,20 +12,18 @@ function isDeprecation(value: unknown): value is Deprecation {
   }
 }
 
-export function assertIsDeprecation(
-  value: unknown
-): asserts value is Deprecation {
+export function assertIsDeprecation(value: unknown): Deprecation {
   assert(
     'value was expected to be a `deprecate` params array',
     isDeprecation(value)
   );
+  return value;
 }
 
-export function assertIsDeprecations(
-  value: unknown
-): asserts value is Deprecation[] {
+export function assertIsDeprecations(value: unknown): Deprecation[] {
   assert(
     'value was expected to be am array of `deprecate` params arrays',
-    Array.isArray(value) && value.every((element) => isDeprecation(element))
+    Array.isArray(value) && value.every(isDeprecation)
   );
+  return value;
 }

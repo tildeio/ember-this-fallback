@@ -94,6 +94,8 @@ module.exports = {
         '@typescript-eslint/promise-function-async': 'error',
         '@typescript-eslint/require-array-sort-compare': 'error',
         '@typescript-eslint/switch-exhaustiveness-check': 'error',
+        // This rule is not very useful in TS
+        'unicorn/no-array-callback-reference': 'off',
       },
     },
     // node files
