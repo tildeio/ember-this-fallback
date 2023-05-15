@@ -5,22 +5,48 @@ import {
   format,
   transports,
   type Logform,
-  type Logger,
 } from 'winston';
 import Transport from 'winston-transport';
 
-export { type Logger } from 'winston';
+export interface Logger {
+  debug: LeveledLogMethod;
+  warn: LeveledLogMethod;
+  error: LeveledLogMethod;
+}
 
-type LogInfo = Logform.TransformableInfo & {
-  label: string;
-  timestamp: string;
-};
+type RawMessage = string | string[];
+
+interface LeveledLogMethod {
+  (message: RawMessage, ...meta: unknown[]): void;
+  (infoObject: Partial<LogInfo>): void;
+}
+
+interface LogInfo {
+  message: RawMessage;
+  loc?: SourceSpan;
+}
+
+type FormattedLogInfo = Omit<Logform.TransformableInfo, 'message' | 'level'> &
+  Omit<LogInfo, 'message'> & {
+    message: string;
+    level: string;
+    label: string;
+    timestamp: string;
+  };
+
+export function noopLogger(): Logger {
+  return {
+    debug: noop,
+    warn: noop,
+    error: noop,
+  };
+}
 
 export default function createLogger(namespace: string, label: string): Logger {
   const debug = _debug(namespace);
 
   class DebugTransport extends Transport {
-    public override log(info: LogInfo, next: () => void): void {
+    public override log(info: FormattedLogInfo, next: () => void): void {
       debug(info[Symbol.for('message')]);
       next();
     }
@@ -64,18 +90,14 @@ const joinLines = format((info) => {
   return info;
 });
 
-const logFormatter = format.printf(
-  ({ level, label, timestamp, message, loc }) => {
-    return `${String(timestamp)} [${level}] ${concatMessage(
-      String(label),
-      String(message),
-      loc as SourceSpan | undefined
-    )}`;
-  }
-);
+const logFormatter = format.printf((info) => {
+  const { level, label, timestamp, message, loc } = info as FormattedLogInfo;
+  return `${timestamp} [${level}] ${concatMessage(label, message, loc)}`;
+});
 
-const debugFormatter = format.printf(({ label, message }) => {
-  return concatMessage(String(label), String(message));
+const debugFormatter = format.printf((info) => {
+  const { label, message } = info as FormattedLogInfo;
+  return concatMessage(label, message);
 });
 
 function concatMessage(
@@ -93,3 +115,5 @@ function concatMessage(
 function joinLogLines(lines: string[]): string {
   return lines.join('\n\t');
 }
+
+function noop(): void {}

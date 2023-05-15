@@ -1,19 +1,19 @@
 'use strict';
 
 const ThisFallbackPlugin = require('./lib/this-fallback-plugin');
+const getOptions = require('./lib/options').getOptions;
 
 module.exports = {
   name: require('./package').name,
 
   setupPreprocessorRegistry(type, registry) {
-    // This check ensures that the plugin runs only on the app's code, not on
-    // this addon's own code.
     if (type === 'parent') {
-      registry.add('htmlbars-ast-plugin', this._buildPlugin());
+      const options = getOptions(findHost(this));
+      registry.add('htmlbars-ast-plugin', this._buildPlugin(options));
     }
   },
 
-  _buildPlugin() {
+  _buildPlugin(options) {
     ThisFallbackPlugin.baseDir = () => __dirname;
     ThisFallbackPlugin.cacheKey = () => 'ember-this-fallback';
 
@@ -22,9 +22,21 @@ module.exports = {
       parallelBabel: {
         requireFile: __filename,
         buildUsing: '_buildPlugin',
-        params: {},
+        params: options,
       },
-      plugin: ThisFallbackPlugin,
+      plugin: ThisFallbackPlugin(options),
     };
   },
 };
+
+// HACK: Borrowed from https://github.com/empress/ember-showdown-prism/blob/73a86d5680979c170a8589d723b4ba028bcf81af/index.js#LL42C1-L52C2
+function findHost(addon) {
+  let current = addon;
+  let app;
+
+  do {
+    app = current.app || app;
+  } while (current.parent.parent && (current = current.parent));
+
+  return app;
+}

@@ -130,6 +130,30 @@ In the future, we could resolve this incompatibility if we had access to Embroid
 
 Because the intent of this library is to allow users to upgrade to Ember 4.0+ while they still in the process of resolving this-property-fallback deprecations, this library includes the [`this-property-fallback` deprecation from Ember 3.x](https://deprecations.emberjs.com/v3.x#toc_this-property-fallback). You can follow the instructions [here](https://guides.emberjs.com/release/configuring-ember/handling-deprecations/) for handling these deprecations.
 
+## Configuration
+
+You can configure this addon under the `'ember-this-fallback'` key in the `EmberApp` constructor options:
+
+```js
+"use strict";
+
+const EmberApp = require("ember-cli/lib/broccoli/ember-app");
+
+module.exports = function (defaults) {
+  const app = new EmberApp(defaults, {
+    //...
+    "ember-this-fallback": {
+      /**
+       * Disable all logging, including debug logging (even with the `DEBUG`
+       * environment variable) and logging to `ember-this-fallback-plugin.log`.
+       */
+      enableLogging: false,
+    },
+  });
+  // ...
+};
+```
+
 ## Contributing
 
 See the [Contributing](CONTRIBUTING.md) guide for details.

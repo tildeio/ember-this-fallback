@@ -45,7 +45,8 @@
     "ember-cli-htmlbars": "^6.2.0",
     "ember-cli-typescript": "^5.2.1",
     "lodash": "^4.17.21",
-    "winston": "^3.8.2"
+    "winston": "^3.8.2",
+    "zod": "^3.21.4"
   },
   "devDependencies": {
     "@babel/core": "^7.21.8",
