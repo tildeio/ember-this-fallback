@@ -30,9 +30,10 @@ import {
   needsFallback,
   wrapWithTryLookup,
 } from './helpers/fallback';
-import createLogger, { type Logger } from './helpers/logger';
+import createLogger, { noopLogger, type Logger } from './helpers/logger';
 import ScopeStack, { unusedNameLike } from './helpers/scope-stack';
 import { squish } from './helpers/string';
+import { type EmberThisFallbackOptions } from './options';
 import assert from './types/assert';
 
 type Env = WithJSUtils<ASTPluginEnvironment> & {
@@ -288,20 +289,26 @@ class NoopPlugin implements ASTPlugin {
   visitor = {};
 }
 
-const buildThisFallbackPlugin: ASTPluginBuilder<Env> = (env) => {
-  const name = 'ember-this-fallback';
-  const logger = createLogger(`${name}-plugin`, env.moduleName);
+function buildThisFallbackPlugin(
+  options: EmberThisFallbackOptions
+): ASTPluginBuilder<Env> {
+  return (env) => {
+    const name = 'ember-this-fallback';
+    const logger = options.enableLogging
+      ? createLogger(`${name}-plugin`, env.moduleName)
+      : noopLogger();
 
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  if (env.meta.jsutils) {
-    return new ThisFallbackPlugin(name, env, logger);
-  } else {
-    logger.error([
-      'The this-fallback-plugin relies on the JSUtils from babel-plugin-ember-template-compilation, but none were found.',
-      'To resolve this issue, please ensure you are running the latest version of ember-cli-htmlbars.',
-    ]);
-    return new NoopPlugin(name);
-  }
-};
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (env.meta.jsutils) {
+      return new ThisFallbackPlugin(name, env, logger);
+    } else {
+      logger.error([
+        'The this-fallback-plugin relies on the JSUtils from babel-plugin-ember-template-compilation, but none were found.',
+        'To resolve this issue, please ensure you are running the latest version of ember-cli-htmlbars.',
+      ]);
+      return new NoopPlugin(name);
+    }
+  };
+}
 
 export = buildThisFallbackPlugin;

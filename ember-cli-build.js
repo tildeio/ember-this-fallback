@@ -7,6 +7,11 @@ module.exports = function (defaults) {
     'ember-cli-babel': {
       throwUnlessParallelizable: true,
     },
+
+    // Uncomment this to disable logging altogether:
+    // 'ember-this-fallback': {
+    //   enableLogging: false,
+    // },
   });
 
   /*
