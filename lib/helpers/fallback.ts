@@ -1,5 +1,7 @@
 import { builders as b, type AST, type WalkerPath } from '@glimmer/syntax';
 import { type JSUtils } from 'babel-plugin-ember-template-compilation';
+import { camelCase } from 'lodash';
+import { type Deprecation } from './deprecations';
 import type ScopeStack from './scope-stack';
 import { headNotInScope, unusedNameLike } from './scope-stack';
 import { classify } from './string';
@@ -16,6 +18,11 @@ export type AmbiguousMustacheExpression = AST.MustacheStatement & {
   hash: AST.Hash & { pairs: [] };
   path: AmbiguousPathExpression;
 };
+
+interface BindingConfig {
+  bindImport: JSUtils['bindImport'];
+  bindingTarget: WalkerPath<AST.Node>;
+}
 
 export function needsFallback(
   expr: AST.Expression,
@@ -59,22 +66,24 @@ export function mustacheNeedsFallback(
  * {{this.property.value}}
  * ```
  */
-export function expressionFallback(
+export function buildtimeExpressionFallback(
   expr: AmbiguousPathExpression
 ): AST.PathExpression {
-  const tail = `${expr.tail.length > 0 ? '.' : ''}${expr.tail.join('.')}`;
-  const thisPath = `this.${expr.head.name}${tail}`;
+  const thisPath = `this.${stringifyPath(expr)}`;
   return b.path(thisPath, expr.loc);
 }
 
-/**
- * Performs `expressionFallback` only if `needsFallback` is `true`.
- */
-export function maybeExpressionFallback(
-  expr: AST.Expression,
-  scope: ScopeStack
-): AST.Expression {
-  return needsFallback(expr, scope) ? expressionFallback(expr) : expr;
+function runtimeExpressionFallback(
+  expr: AmbiguousMustacheExpression,
+  deprecation: Deprecation | false,
+  binding: BindingConfig
+): AST.SubExpression {
+  const thisFallbackHelper = bindAddonHelper('this-fallback-helper', binding);
+  return b.sexpr(thisFallbackHelper, [
+    b.path('this'),
+    b.string(stringifyPath(expr.path)),
+    deprecation ? b.string(JSON.stringify(deprecation)) : b.boolean(false),
+  ]);
 }
 
 /**
@@ -94,18 +103,12 @@ export function maybeExpressionFallback(
  * ```
  */
 export function wrapWithTryLookup(
-  path: WalkerPath<AST.Statement>,
   node: AST.Statement,
   headsToLookup: Set<string>,
   blockParam: string,
-  bindImport: JSUtils['bindImport']
+  binding: BindingConfig
 ): AST.BlockStatement {
-  const tryLookupHelper = bindImport(
-    'ember-this-fallback/try-lookup-helper',
-    'default',
-    path,
-    { nameHint: 'try-lookup-helper' }
-  );
+  const tryLookupHelper = bindAddonHelper('try-lookup-helper', binding);
   const lookupsHash = b.sexpr(
     b.path('hash'),
     undefined,
@@ -133,19 +136,21 @@ export function wrapWithTryLookup(
  * `expressionFallback`.
  *
  * ```hbs
- * (if maybeHelpers.property (maybeHelpers.property) this.property)
+ * (if maybeHelpers.property (maybeHelpers.property) (thisFallbackHelper this 'property' 'Deprecation message'))
  * ```
  */
 export function helperOrExpressionFallback(
   blockParamName: string,
-  expr: AmbiguousMustacheExpression
+  expr: AmbiguousMustacheExpression,
+  deprecation: Deprecation | false,
+  binding: BindingConfig
 ): AST.SubExpression {
   const headName = expr.path.head.name;
   const maybeHelper = `${blockParamName}.${headName}`;
   return b.sexpr(b.path('if'), [
     b.path(maybeHelper),
     b.sexpr(b.path(maybeHelper)),
-    expressionFallback(expr.path),
+    runtimeExpressionFallback(expr, deprecation, binding),
   ]);
 }
 
@@ -172,27 +177,22 @@ export function helperOrExpressionFallback(
 export function ambiguousStatementFallback(
   expr: AmbiguousMustacheExpression,
   path: WalkerPath<AST.MustacheStatement>,
-  bindImport: JSUtils['bindImport'],
-  scope: ScopeStack
+  scope: ScopeStack,
+  deprecation: Deprecation | false,
+  binding: BindingConfig
 ): AST.BlockStatement {
   const headName = expr.path.head.name;
-  const isComponent = bindImport(
-    'ember-this-fallback/is-component',
-    'default',
-    path,
-    { nameHint: 'isComponent' }
-  );
+  const isComponent = bindAddonHelper('is-component', binding);
 
   const blockParamName = unusedNameLike('maybeHelpers', scope);
   const maybeHelperFallback = b.mustache(
-    helperOrExpressionFallback(blockParamName, expr)
+    helperOrExpressionFallback(blockParamName, expr, deprecation, binding)
   );
   const tryLookup = wrapWithTryLookup(
-    path,
     maybeHelperFallback,
     new Set([headName]),
     blockParamName,
-    bindImport
+    binding
   );
 
   return b.block(
@@ -203,6 +203,21 @@ export function ambiguousStatementFallback(
     b.blockItself([tryLookup]),
     path.node.loc
   );
+}
+
+export function maybeAddDeprecationsHelper(
+  template: AST.Template,
+  deprecations: Deprecation[],
+  binding: BindingConfig
+): void {
+  if (deprecations.length > 0) {
+    const deprecationsHelper = bindAddonHelper('deprecations-helper', binding);
+    template.body.push(
+      b.mustache(b.path(deprecationsHelper), [
+        b.string(JSON.stringify(deprecations)),
+      ])
+    );
+  }
 }
 
 export function ambiguousAttrFallbackWarning(headName: string): string[] {
@@ -239,4 +254,21 @@ function explicitHelperSuggestion(name: string): string {
 
 function thisPropertySuggestion(name: string): string {
   return `prefacing a known property on \`this\` with \`this\`: \`{{this.${name}}}\``;
+}
+
+function bindAddonHelper(
+  helperName: string,
+  { bindImport, bindingTarget }: BindingConfig,
+  exportedName = 'default'
+): string {
+  return bindImport(
+    `ember-this-fallback/${helperName}`,
+    exportedName,
+    bindingTarget,
+    { nameHint: camelCase(helperName) }
+  );
+}
+
+function stringifyPath(expr: AmbiguousPathExpression): string {
+  return [expr.head.name, ...expr.tail].join('.');
 }

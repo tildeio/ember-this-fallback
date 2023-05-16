@@ -1,6 +1,10 @@
 import { render } from '@ember/test-helpers';
 import { setupRenderingTest } from 'dummy/tests/helpers';
 import {
+  expectDeprecations,
+  fallbackDeprecationExpectation,
+} from 'dummy/tests/helpers/deprecations';
+import {
   localHelperNamed,
   localHelperPositional,
 } from 'dummy/tests/helpers/helpers';
@@ -45,6 +49,7 @@ module('Integration | Plugin | ConcatStatement', function (hooks) {
             assert
               .dom('[data-test-global-component]')
               .hasAttribute('id', 'property-on-this');
+            expectDeprecations(fallbackDeprecationExpectation('property'));
           });
 
           test('handles this-fallback x2', async function (assert) {
@@ -60,6 +65,10 @@ module('Integration | Plugin | ConcatStatement', function (hooks) {
             assert
               .dom('[data-test-global-component]')
               .hasAttribute('id', 'property-on-this-property-on-this');
+            expectDeprecations(
+              fallbackDeprecationExpectation('property'),
+              fallbackDeprecationExpectation('property')
+            );
           });
 
           test('does nothing to ThisHead PathExpression', async function (assert) {
@@ -111,6 +120,7 @@ module('Integration | Plugin | ConcatStatement', function (hooks) {
                 </GlobalComponent>
               `);
             assert.dom().hasText('global-component-contents property-on-this');
+            expectDeprecations(fallbackDeprecationExpectation('property'));
           });
 
           test('handles this-fallback x2', async function (assert) {
@@ -129,6 +139,10 @@ module('Integration | Plugin | ConcatStatement', function (hooks) {
               .hasText(
                 'global-component-contents property-on-this property-on-this'
               );
+            expectDeprecations(
+              fallbackDeprecationExpectation('property'),
+              fallbackDeprecationExpectation('property')
+            );
           });
 
           test('does nothing to ThisHead PathExpression', async function (assert) {

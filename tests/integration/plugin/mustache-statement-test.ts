@@ -1,6 +1,10 @@
 import { render } from '@ember/test-helpers';
 import { setupRenderingTest } from 'dummy/tests/helpers';
 import {
+  expectDeprecations,
+  fallbackDeprecationExpectation,
+} from 'dummy/tests/helpers/deprecations';
+import {
   localHelperNamed,
   localHelperPositional,
 } from 'dummy/tests/helpers/helpers';
@@ -39,6 +43,7 @@ module('Integration | Plugin | MustacheStatement', function (hooks) {
               {{property}}
             `);
             assert.dom().hasText('property-on-this');
+            expectDeprecations(fallbackDeprecationExpectation('property'));
           });
 
           test('does nothing to ThisHead PathExpression', async function (assert) {
@@ -71,6 +76,7 @@ module('Integration | Plugin | MustacheStatement', function (hooks) {
               assert
                 .dom('[data-test-global-component]')
                 .hasAttribute('id', 'property-on-this');
+              expectDeprecations(fallbackDeprecationExpectation('property'));
             });
 
             test('does nothing to ThisHead PathExpression', async function (assert) {
@@ -100,6 +106,7 @@ module('Integration | Plugin | MustacheStatement', function (hooks) {
               assert
                 .dom()
                 .hasText('global-component-contents property-on-this');
+              expectDeprecations(fallbackDeprecationExpectation('property'));
             });
 
             test('does nothing to ThisHead PathExpression', async function (assert) {
@@ -173,6 +180,7 @@ module('Integration | Plugin | MustacheStatement', function (hooks) {
               {{property.tail}}
             `);
             assert.dom().hasText('property-on-this');
+            expectDeprecations(fallbackDeprecationExpectation('property'));
           });
 
           test('does nothing to ThisHead PathExpression', async function (assert) {
@@ -201,6 +209,7 @@ module('Integration | Plugin | MustacheStatement', function (hooks) {
               assert
                 .dom('[data-test-global-component]')
                 .hasAttribute('id', 'property-on-this');
+              expectDeprecations(fallbackDeprecationExpectation('property'));
             });
 
             test('does nothing to ThisHead PathExpression', async function (assert) {
@@ -338,6 +347,7 @@ module('Integration | Plugin | MustacheStatement', function (hooks) {
               {{global-helper property}}
             `);
             assert.dom().hasText('global-helper-result property-on-this');
+            expectDeprecations(fallbackDeprecationExpectation('property'));
           });
         });
 
@@ -462,6 +472,7 @@ module('Integration | Plugin | MustacheStatement', function (hooks) {
               {{/global-component}}
             `);
             assert.dom().hasText('global-component-contents property-on-this');
+            expectDeprecations(fallbackDeprecationExpectation('property'));
           });
         });
 
