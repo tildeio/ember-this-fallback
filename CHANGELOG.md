@@ -1,4 +1,13 @@
 
+
+## v0.2.0 (2023-05-16)
+
+#### :rocket: Enhancement
+* [#10](https://github.com/tildeio/ember-this-fallback/pull/10) Re-deprecate this-property-fallback ([@gitKrystan](https://github.com/gitKrystan))
+
+#### Committers: 1
+- Krystan HuffMenne ([@gitKrystan](https://github.com/gitKrystan))
+
 ## v0.1.0 (2023-05-05)
 
 #### :rocket: Enhancement
