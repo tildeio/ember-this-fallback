@@ -6,7 +6,7 @@ Polyfills [Ember's deprecated Property Fallback Lookup feature](https://deprecat
 
 - Ember.js v3.28.11 or above
 - Ember CLI v3.28 or above
-- Node.js v14 or above
+- Node.js v16 or above
 - ember-cli-htmlbars 6.2.0 or above
 
 ## Installation
