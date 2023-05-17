@@ -2,10 +2,20 @@
 
 ## v0.3.1 (2023-05-17)
 
+#### :rocket: Enhancement
+* [#16](https://github.com/tildeio/ember-this-fallback/pull/16) Allow logging to be disabled ([@gitKrystan](https://github.com/gitKrystan))
+
+#### Committers: 1
+- Krystan HuffMenne ([@gitKrystan](https://github.com/gitKrystan))
+
 ## v0.2.0 (2023-05-16)
 
 #### :rocket: Enhancement
 * [#10](https://github.com/tildeio/ember-this-fallback/pull/10) Re-deprecate this-property-fallback ([@gitKrystan](https://github.com/gitKrystan))
+* [#14](https://github.com/tildeio/ember-this-fallback/pull/14) Enable parallelBabel ([@gitKrystan](https://github.com/gitKrystan))
+
+#### :bug: Bug Fix
+* [#13](https://github.com/tildeio/ember-this-fallback/pull/13) Handle this-fallback for @arg Attr Node values within Element Nodes ([@gitKrystan](https://github.com/gitKrystan))
 
 #### Committers: 1
 - Krystan HuffMenne ([@gitKrystan](https://github.com/gitKrystan))
