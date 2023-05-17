@@ -289,12 +289,12 @@ class NoopPlugin implements ASTPlugin {
   visitor = {};
 }
 
-function buildThisFallbackPlugin(
-  options: EmberThisFallbackOptions
-): ASTPluginBuilder<Env> {
+function buildThisFallbackPlugin({
+  enableLogging,
+}: EmberThisFallbackOptions): ASTPluginBuilder<Env> {
   return (env) => {
     const name = 'ember-this-fallback';
-    const logger = options.enableLogging
+    const logger = enableLogging
       ? createLogger(`${name}-plugin`, env.moduleName)
       : noopLogger();
 
@@ -302,11 +302,19 @@ function buildThisFallbackPlugin(
     if (env.meta.jsutils) {
       return new ThisFallbackPlugin(name, env, logger);
     } else {
-      logger.error([
+      const errorMessage = [
         'The this-fallback-plugin relies on the JSUtils from babel-plugin-ember-template-compilation, but none were found.',
         'To resolve this issue, please ensure you are running the latest version of ember-cli-htmlbars.',
-      ]);
-      return new NoopPlugin(name);
+      ];
+      if (enableLogging) {
+        logger.error([
+          'The this-fallback-plugin relies on the JSUtils from babel-plugin-ember-template-compilation, but none were found.',
+          'To resolve this issue, please ensure you are running the latest version of ember-cli-htmlbars.',
+        ]);
+        return new NoopPlugin(name);
+      } else {
+        throw new Error(errorMessage.join(' '));
+      }
     }
   };
 }
