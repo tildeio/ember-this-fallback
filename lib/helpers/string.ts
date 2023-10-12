@@ -19,5 +19,7 @@ export function squish(str: string): string {
 }
 
 export function classify(str: string): string {
-  return upperFirst(camelCase(str));
+  const parts = str.split('/');
+  const classifiedParts = parts.map((p) => upperFirst(camelCase(p)));
+  return classifiedParts.join('::');
 }
