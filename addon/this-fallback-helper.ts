@@ -3,9 +3,9 @@ import { deprecate } from '@ember/debug';
 import { get } from '@ember/object';
 import { assertIsDeprecation } from 'ember-this-fallback/types/deprecations';
 
-type Positional<T, K extends keyof T> = [
-  context: T,
-  path: K,
+type Positional = [
+  context: object,
+  path: string,
   deprecationJson: string | false
 ];
 
@@ -16,10 +16,7 @@ type Positional<T, K extends keyof T> = [
  * will be called with those params.
  */
 const thisFallbackHelper = helper(
-  <T, K extends keyof T>([context, path, deprecationJson]: Positional<
-    T,
-    K
-  >) => {
+  ([context, path, deprecationJson]: Positional) => {
     if (deprecationJson) {
       const deprecation = assertIsDeprecation(JSON.parse(deprecationJson));
       deprecate(...deprecation);
