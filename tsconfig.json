@@ -13,7 +13,8 @@
       "ember-this-fallback/test-support": ["addon-test-support"],
       "ember-this-fallback/test-support/*": ["addon-test-support/*"],
       "*": ["types/*"]
-    }
+    },
+    "skipLibCheck": true
   },
   "include": [
     "app/**/*",
