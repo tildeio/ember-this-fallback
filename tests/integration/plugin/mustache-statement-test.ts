@@ -28,6 +28,11 @@ module('Integration | Plugin | MustacheStatement', function (hooks) {
             assert.dom().hasText('global-component-contents');
           });
 
+          test('handles a nested invocable component', async function (assert) {
+            await render(hbs`{{somedir/nested-global-component}}`);
+            assert.dom().hasText('nested-global-component-contents');
+          });
+
           test('does nothing to an invocable modifier', async function (assert) {
             await render(hbs`<div {{global-modifier}} />`);
             assert.dom().hasText('global-modifier-result');
